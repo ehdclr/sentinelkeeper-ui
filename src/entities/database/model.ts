@@ -6,7 +6,16 @@ export const DatabaseConfigSchema = z.discriminatedUnion("type", [
     database: z.string().min(1, "Database name is required"),
   }),
   z.object({
-    type: z.union([z.literal("postgres"), z.literal("mysql")]),
+    type: z.literal("postgres"),
+    host: z.string().min(1, "Host is required"),
+    port: z.number().min(1).max(65535, "Port must be between 1 and 65535"),
+    username: z.string().min(1, "Username is required"),
+    password: z.string().optional(),
+    database: z.string().min(1, "Database name is required"),
+    ssl: z.boolean().optional(),
+  }),
+  z.object({
+    type: z.literal("mysql"),
     host: z.string().min(1, "Host is required"),
     port: z.number().min(1).max(65535, "Port must be between 1 and 65535"),
     username: z.string().min(1, "Username is required"),
