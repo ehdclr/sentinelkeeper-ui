@@ -1,7 +1,7 @@
 export const DATABASE_DEFAULTS = {
   sqlite: {
     type: "sqlite" as const,
-    database: "app.db",
+    database: "sentinel.db",
   },
   postgres: {
     type: "postgres" as const,
@@ -9,7 +9,7 @@ export const DATABASE_DEFAULTS = {
     port: 5432,
     username: "postgres",
     password: "",
-    database: "myapp",
+    database: "sentinel",
   },
   mysql: {
     type: "mysql" as const,
@@ -17,7 +17,7 @@ export const DATABASE_DEFAULTS = {
     port: 3306,
     username: "root",
     password: "",
-    database: "myapp",
+    database: "sentinel",
   },
 } as const;
 
