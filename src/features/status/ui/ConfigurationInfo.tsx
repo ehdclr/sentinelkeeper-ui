@@ -1,6 +1,5 @@
 import { SetupStatus } from "@/entities/database/model";
 import { CheckCircle, XCircle, Settings, Lock } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 interface ConfigurationInfoProps {
   status: SetupStatus;
@@ -8,29 +7,28 @@ interface ConfigurationInfoProps {
 
 export function ConfigurationInfo({ status }: ConfigurationInfoProps) {
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-2">
-        <p className="text-sm font-medium">Configuration</p>
+    <div className="grid grid-cols-2 gap-4 text-center">
+      <div>
+        <p className="text-xs text-muted-foreground mb-1">Configuration</p>
         <div className="flex items-center space-x-2">
           {status.configured ? (
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CheckCircle className="h-5 w-5 text-green-500 mx-auto" />
           ) : (
-            <XCircle className="h-4 w-4 text-red-500" />
+            <XCircle className="h-5 w-5 text-red-500 mx-auto" />
           )}
         </div>
       </div>
-      <Separator orientation="vertical" />
-      <div className="space-y-2">
-        <p className="text-sm font-medium">Lock Status</p>
+      <div>
+        <p className="text-xs text-muted-foreground mb-1">Lock Status</p>
         <div className="flex items-center space-x-2">
           {status.locked ? (
-            <Lock className="h-4 w-4 text-yellow-500" />
+            <Lock className="h-5 w-5 text-yellow-500 mx-auto" />
           ) : (
-            <Settings className="h-4 w-4 text-gray-500" />
+            <Settings className="h-5 w-5 text-gray-500 mx-auto" />
           )}
-          <span className="text-sm">
-            {status.locked ? "Locked" : "Unlocked"}
-          </span>
+        <span className="block text-xs mt-1">
+          {status.locked ? "Locked" : "Unlocked"}
+        </span>
         </div>
       </div>
     </div>

@@ -1,8 +1,7 @@
 import { ApiResponse } from "@/entities/database/model";
 import { errorHandler } from "@/shared/lib/errorHandler";
 
-export const apiBase =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+export const apiBase =  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
 export interface SafeApiResult<T> {
   success: boolean;
@@ -24,7 +23,6 @@ export async function safeApiFetch<T>(
       },
       ...options,
     });
-
     const data: ApiResponse<T> = await response.json();
 
     if (!response.ok) {

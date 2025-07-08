@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +20,7 @@ import {
   DatabaseConfigSchema,
 } from "@/entities/database/model";
 import { Database, TestTube, Save, Loader2, Info } from "lucide-react";
+import { DATABASE_DEFAULTS, DATABASE_TYPES } from "@/common/constants/database";
 
 interface ConfigureDatabaseFormProps {
   examples: Record<string, DatabaseConfig> | null;
@@ -30,6 +30,12 @@ interface ConfigureDatabaseFormProps {
   isSaveLoading: boolean;
 }
 
+const hasFieldError = (errors: unknown, field: string): boolean => {
+  return Boolean(
+    errors && typeof errors === "object" && errors !== null && field in errors
+  );
+};
+
 export function ConfigureDatabaseForm({
   examples,
   onTestConnection,
@@ -37,14 +43,9 @@ export function ConfigureDatabaseForm({
   isTestLoading,
   isSaveLoading,
 }: ConfigureDatabaseFormProps) {
-  const [selectedType, setSelectedType] = useState<string>("sqlite");
-
   const form = useForm<DatabaseConfig>({
     resolver: zodResolver(DatabaseConfigSchema),
-    defaultValues: {
-      type: "sqlite",
-      database: "app.db",
-    },
+    defaultValues: DATABASE_DEFAULTS.sqlite,
   });
 
   const {
@@ -54,6 +55,7 @@ export function ConfigureDatabaseForm({
     setValue,
     formState: { errors },
   } = form;
+
   const watchedType = watch("type");
 
   const loadExample = (type: string) => {
@@ -61,9 +63,18 @@ export function ConfigureDatabaseForm({
 
     const example = examples[type];
     Object.entries(example).forEach(([key, value]) => {
-      setValue(key as any, value as any);
+      setValue(key as keyof DatabaseConfig, value as never);
     });
-    setSelectedType(type);
+  };
+
+  const handleDatabaseTypeChange = (newType: string) => {
+    const defaults =
+      DATABASE_DEFAULTS[newType as keyof typeof DATABASE_DEFAULTS];
+    if (defaults) {
+      Object.entries(defaults).forEach(([key, value]) => {
+        setValue(key as keyof DatabaseConfig, value as never);
+      });
+    }
   };
 
   const onSubmit = (data: DatabaseConfig) => {
@@ -79,6 +90,89 @@ export function ConfigureDatabaseForm({
       console.error("Validation failed:", error);
     }
   };
+
+  const renderSqliteFields = () => (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="database">Database File</Label>
+        <Input {...register("database")} placeholder="app.db" />
+        {errors.database && (
+          <p className="text-sm text-red-500">{errors.database.message}</p>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderPostgresMysqlFields = () => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="host">Host</Label>
+          <Input {...register("host")} placeholder="localhost" />
+          {hasFieldError(errors, "host") && (
+            <p className="text-sm text-red-500">
+              {(errors as Record<string, { message?: string }>).host?.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="port">Port</Label>
+          <Input
+            {...register("port", { valueAsNumber: true })}
+            type="number"
+            placeholder={watchedType === "postgres" ? "5432" : "3306"}
+          />
+          {hasFieldError(errors, "port") && (
+            <p className="text-sm text-red-500">
+              {(errors as Record<string, { message?: string }>).port?.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="username">Username</Label>
+          <Input
+            {...register("username")}
+            placeholder={watchedType === "postgres" ? "postgres" : "root"}
+          />
+          {hasFieldError(errors, "username") && (
+            <p className="text-sm text-red-500">
+              {
+                (errors as Record<string, { message?: string }>).username
+                  ?.message
+              }
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            {...register("password")}
+            type="password"
+            placeholder="Optional"
+          />
+          {hasFieldError(errors, "password") && (
+            <p className="text-sm text-red-500">
+              {
+                (errors as Record<string, { message?: string }>).password
+                  ?.message
+              }
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="database">Database Name</Label>
+        <Input {...register("database")} placeholder="myapp" />
+        {errors.database && (
+          <p className="text-sm text-red-500">{errors.database.message}</p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -104,18 +198,17 @@ export function ConfigureDatabaseForm({
               <Label htmlFor="type">Database Type</Label>
               <Select
                 value={watchedType}
-                onValueChange={(value) => {
-                  setValue("type", value as any);
-                  setSelectedType(value as any);
-                }}
+                onValueChange={handleDatabaseTypeChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select database type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sqlite">SQLite</SelectItem>
-                  <SelectItem value="postgres">PostgreSQL</SelectItem>
-                  <SelectItem value="mysql">MySQL</SelectItem>
+                  {DATABASE_TYPES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {errors.type && (
@@ -145,84 +238,10 @@ export function ConfigureDatabaseForm({
 
             <Separator />
 
-            {/* SQLite Fields */}
-            {watchedType === "sqlite" && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="database">Database File</Label>
-                  <Input {...register("database")} placeholder="app.db" />
-                  {errors.database && (
-                    <p className="text-sm text-red-500">
-                      {errors.database.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* PostgreSQL/MySQL Fields */}
-            {(watchedType === "postgres" || watchedType === "mysql") && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="host">Host</Label>
-                    <Input {...register("host")} placeholder="localhost" />
-                    {errors.root?.host && (
-                      <p className="text-sm text-red-500">
-                        {errors.root.host.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="port">Port</Label>
-                    <Input
-                      {...register("port", { valueAsNumber: true })}
-                      type="number"
-                      placeholder={watchedType === "postgres" ? "5432" : "3306"}
-                    />
-                    {errors.root?.port && (
-                      <p className="text-sm text-red-500">
-                        {errors.root.port.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Input
-                      {...register("username")}
-                      placeholder={
-                        watchedType === "postgres" ? "postgres" : "root"
-                      }
-                    />
-                    {errors.root?.username && (
-                      <p className="text-sm text-red-500">
-                        {errors.root.username.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      {...register("password")}
-                      type="password"
-                      placeholder="Optional"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="database">Database Name</Label>
-                  <Input {...register("database")} placeholder="myapp" />
-                  {errors.database && (
-                    <p className="text-sm text-red-500">
-                      {errors.database.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Database-specific fields */}
+            {watchedType === "sqlite" && renderSqliteFields()}
+            {(watchedType === "postgres" || watchedType === "mysql") &&
+              renderPostgresMysqlFields()}
 
             <Separator />
 

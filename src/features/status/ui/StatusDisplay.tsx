@@ -29,23 +29,26 @@ export function StatusDisplay({
     <div className="space-y-4 w-full">
       <Card>
         <CardHeader>
-          <CardTitle className="text-center">데이터베이스 상태</CardTitle>
+          <CardTitle className="text-center text-lg font-bold">
+            Database Status
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-center space-x-3">
             <StatusBadge status={status} health={health} />
             {onRefresh && (
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={onRefresh}
-                className="hover:bg-gray-100 hover:text-gray-900 hover:border-gray-300 hover:shadow-lg hover:scale-105 transition-all duration-300 hover:cursor-pointer ml-auto mr-4"
+                className="hover:bg-gray-100 hover:text-gray-900 hover:border-gray-300 hover:shadow-lg hover:scale-105 transition-all duration-300 hover:cursor-pointer ml-auto "
               >
-                <RefreshCw className="h-3 w-3" />
+                <RefreshCw className="h-4 w-4" />
               </Button>
             )}
           </div>
 
+          <Separator />
           <ConfigurationInfo status={status} />
 
           {status.configured && (

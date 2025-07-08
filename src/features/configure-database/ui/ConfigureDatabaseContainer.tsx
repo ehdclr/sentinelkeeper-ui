@@ -46,24 +46,15 @@ export function ConfigureDatabaseContainer() {
     setIsTestLoading(true);
 
     try {
-      const result = await safeApiFetch(
-        "/setup/test-connection",
-        {
-          method: "POST",
-          body: JSON.stringify(config),
-        },
-        false
-      ); // ✅ toast는 직접 처리
+      const result = await safeApiFetch("/setup/test-connection", {
+        method: "POST",
+        body: JSON.stringify(config),
+      }); // ✅ toast는 직접 처리
 
       if (result.success) {
-        toast.success("Connection Test Passed", {
-          description: "Database connection is working",
+        toast.success("연결에 성공했습니다.", {
+          description: "데이터베이스 연결이 성공했습니다.",
         });
-      } else {
-        errorHandler.api(
-          new Error(result.error || "Unknown error"),
-          "Connection Test"
-        );
       }
     } catch (error) {
       errorHandler.general(error, "Connection Test");
@@ -108,7 +99,11 @@ export function ConfigureDatabaseContainer() {
 
   return (
     <ConfigureDatabaseForm
-      examples={examplesResult?.success ? (examplesResult.data as Record<string, DatabaseConfig>) : null}
+      examples={
+        examplesResult?.success
+          ? (examplesResult.data as Record<string, DatabaseConfig>)
+          : null
+      }
       onTestConnection={handleTestConnection}
       onSaveConfiguration={handleSaveConfiguration}
       isTestLoading={isTestLoading}

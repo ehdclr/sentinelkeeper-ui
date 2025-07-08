@@ -6,4 +6,5 @@ export async function testConnection(config: DatabaseConfig) {
     method: "POST",
     body: JSON.stringify(config),
   });
+  
 }
