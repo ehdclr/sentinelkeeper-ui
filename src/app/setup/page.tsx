@@ -1,12 +1,10 @@
-import { SuspenseWrapper } from '@/shared/components/SuspenseWrapper'
+import { SuspenseWrapper } from "@/shared/components/SuspenseWrapper"
+import { SetupWizard } from "@/widgets/setup-wizard/SetupWizard"
 
-export default function SetupPage({children}: {children: React.ReactNode}) {
+export default function SetupPage() {
   return (
-    <SuspenseWrapper 
-      loadingMessage="설정 페이지를 로드하는 중..." 
-      loadingType="setup"
-    >
-      {children}
+    <SuspenseWrapper loadingMessage="Loading setup wizard..." loadingType="setup">
+      <SetupWizard />
     </SuspenseWrapper>
   )
 }
