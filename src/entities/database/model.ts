@@ -38,7 +38,7 @@ export interface ApiResponse<T = unknown> {
   path: string;
 }
 
-export interface SetupStatus {
+export interface DatabaseSetupStatus {
   configured: boolean;
   locked: boolean;
   type: "sqlite" | "postgres" | "mysql" | null;
@@ -47,7 +47,7 @@ export interface SetupStatus {
   lockExists: boolean;
 }
 
-export interface HealthStatus {
+export interface DatabaseHealthStatus {
   status: "healthy" | "unhealthy" | "setup_required";
   database: {
     type: string;

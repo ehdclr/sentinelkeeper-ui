@@ -3,10 +3,10 @@
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { safeApiFetch } from "@/shared/api/client";
 import { useSetupStore } from "@/shared/store/setupStore";
-import { HealthStatus, SetupStatus } from "@/entities/database/model";
+import { DatabaseSetupStatus, DatabaseHealthStatus } from "@/entities/database/model";
 
 export function useStatus() {
-  const { setStatus, setHealth } = useSetupStore();
+  const { setDatabaseSetupStatus, setDatabaseHealthStatus } = useSetupStore();
 
   const {
     data: statusResult,
@@ -17,7 +17,7 @@ export function useStatus() {
     showToast: false,
     onSuccess: (result) => {
       if (result.success) {
-        setStatus(result.data as SetupStatus);
+        setDatabaseSetupStatus(result.data as DatabaseSetupStatus);
       }
     },
   });
@@ -30,7 +30,7 @@ export function useStatus() {
     showToast: false,
     onSuccess: (result) => {
       if (result.success) {
-        setHealth(result.data as HealthStatus);
+        setDatabaseHealthStatus(result.data as DatabaseHealthStatus);
       }
     },
   });
@@ -41,8 +41,8 @@ export function useStatus() {
   };
 
   return {
-    status: statusResult?.success ? (statusResult.data as SetupStatus) : null,
-    health: healthResult?.success ? (healthResult.data as HealthStatus) : null,
+    status: statusResult?.success ? (statusResult.data as DatabaseSetupStatus) : null,
+    health: healthResult?.success ? (healthResult.data as DatabaseHealthStatus) : null,
     isLoading: statusLoading || healthLoading,
     error: statusError,
     refresh,

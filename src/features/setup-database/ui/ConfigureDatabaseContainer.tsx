@@ -3,32 +3,18 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSetupStore } from "@/shared/store/setupStore";
-import { useAsyncData } from "@/shared/hooks/useAsyncData";
-import { safeApiFetch } from "@/shared/api/client";
 import { ConfigureDatabaseForm } from "./ConfigureDatabaseForm";
 import { DatabaseConfig } from "@/entities/database/model";
-import { LoadingFallback } from "@/shared/components/LoadingFallback";
 import { errorHandler } from "@/shared/lib/errorHandler";
+import { testConnection } from "../api/testConnection";
+import { saveConfiguration } from "../api/saveConfiguration";
 
 export function ConfigureDatabaseContainer() {
-  const { status } = useSetupStore();
+  const { databaseSetupStatus } = useSetupStore();
   const [isTestLoading, setIsTestLoading] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
-  const { data: examplesResult, isLoading: examplesLoading } = useAsyncData(
-    () => safeApiFetch("/setup/examples", {}, false), // ✅ 조용히 처리
-    [],
-    {
-      showToast: false, // ✅ 예시 로드 실패는 toast 표시하지 않음
-      errorContext: "Load Examples",
-    }
-  );
-
-  if (examplesLoading) {
-    return <LoadingFallback message="Loading examples..." type="setup" />;
-  }
-
-  if (status?.configured) {
+  if (databaseSetupStatus?.configured) {
     return (
       <div className="text-center p-6">
         <h2 className="text-xl font-semibold mb-2">
@@ -44,13 +30,8 @@ export function ConfigureDatabaseContainer() {
 
   const handleTestConnection = async (config: DatabaseConfig) => {
     setIsTestLoading(true);
-
     try {
-      const result = await safeApiFetch("/setup/test-connection", {
-        method: "POST",
-        body: JSON.stringify(config),
-      }); // ✅ toast는 직접 처리
-
+      const result = await testConnection(config);
       if (result.success) {
         toast.success("연결에 성공했습니다.", {
           description: "데이터베이스 연결이 성공했습니다.",
@@ -67,20 +48,11 @@ export function ConfigureDatabaseContainer() {
     setIsSaveLoading(true);
 
     try {
-      const result = await safeApiFetch(
-        "/setup/database",
-        {
-          method: "POST",
-          body: JSON.stringify(config),
-        },
-        false
-      ); // ✅ toast는 직접 처리
-
+      const result = await saveConfiguration(config);
       if (result.success) {
         toast.success("Configuration Saved", {
           description: "Database configured successfully. Reloading...",
         });
-
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -99,11 +71,6 @@ export function ConfigureDatabaseContainer() {
 
   return (
     <ConfigureDatabaseForm
-      examples={
-        examplesResult?.success
-          ? (examplesResult.data as Record<string, DatabaseConfig>)
-          : null
-      }
       onTestConnection={handleTestConnection}
       onSaveConfiguration={handleSaveConfiguration}
       isTestLoading={isTestLoading}

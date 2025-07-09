@@ -23,7 +23,6 @@ import { Database, TestTube, Save, Loader2, Info } from "lucide-react";
 import { DATABASE_DEFAULTS, DATABASE_TYPES } from "@/common/constants/database";
 
 interface ConfigureDatabaseFormProps {
-  examples: Record<string, DatabaseConfig> | null;
   onTestConnection: (config: DatabaseConfig) => void;
   onSaveConfiguration: (config: DatabaseConfig) => void;
   isTestLoading: boolean;
@@ -37,7 +36,6 @@ const hasFieldError = (errors: unknown, field: string): boolean => {
 };
 
 export function ConfigureDatabaseForm({
-  examples,
   onTestConnection,
   onSaveConfiguration,
   isTestLoading,
@@ -57,15 +55,6 @@ export function ConfigureDatabaseForm({
   } = form;
 
   const watchedType = watch("type");
-
-  const loadExample = (type: string) => {
-    if (!examples || !examples[type]) return;
-
-    const example = examples[type];
-    Object.entries(example).forEach(([key, value]) => {
-      setValue(key as keyof DatabaseConfig, value as never);
-    });
-  };
 
   const handleDatabaseTypeChange = (newType: string) => {
     const defaults =
@@ -215,26 +204,6 @@ export function ConfigureDatabaseForm({
                 <p className="text-sm text-red-500">{errors.type.message}</p>
               )}
             </div>
-
-            {/* Quick Examples */}
-            {examples && (
-              <div className="space-y-2">
-                <Label>Quick Examples</Label>
-                <div className="flex space-x-2">
-                  {Object.keys(examples).map((type) => (
-                    <Button
-                      key={type}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => loadExample(type)}
-                    >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <Separator />
 

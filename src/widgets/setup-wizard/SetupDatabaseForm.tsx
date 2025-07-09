@@ -1,7 +1,7 @@
 "use client";
 
 import { SuspenseWrapper } from "@/shared/components/SuspenseWrapper";
-import { ConfigureDatabaseContainer } from "@/features/configure-database/ui/ConfigureDatabaseContainer";
+import { ConfigureDatabaseContainer } from "@/features/setup-database/ui/ConfigureDatabaseContainer";
 import { StatusContainer } from "@/features/status/ui/StatusContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { getSetupStatus } from "@/features/status/api/getStatus";
 
-function SetupFormContent() {
+export const SetupDatabaseFormContent = () => {
   const { data: statusResponse, error } = useAsyncData(() => getSetupStatus());
 
   if (error) {
@@ -101,12 +101,15 @@ function SetupFormContent() {
       </div>
     </div>
   );
-}
+};
 
-export function SetupForm() {
+export const SetupDatabaseForm = () => {
   return (
-    <SuspenseWrapper loadingMessage="Loading setup page..." loadingType="setup">
-      <SetupFormContent />
+    <SuspenseWrapper
+      loadingMessage="Loading Database setup page..."
+      loadingType="setup"
+    >
+      <SetupDatabaseFormContent />
     </SuspenseWrapper>
   );
-}
+};

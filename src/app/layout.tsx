@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
-import { Toaster } from "sonner";
+import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,15 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ErrorBoundary>
-          {children}
-          <Toaster
-            position="top-right"
-            richColors
-            closeButton
-            duration={4000}
-          />
-        </ErrorBoundary>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
