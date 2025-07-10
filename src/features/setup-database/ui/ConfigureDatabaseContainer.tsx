@@ -4,7 +4,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSetupStore } from "@/shared/store/setupStore";
 import { ConfigureDatabaseForm } from "./ConfigureDatabaseForm";
-import { DatabaseConfig } from "@/entities/database/model";
+import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { DatabaseConfig } from "@/entities/setup/model";
 import { errorHandler } from "@/shared/lib/errorHandler";
 import { testConnection } from "../api/testConnection";
 import { saveConfiguration } from "../api/saveConfiguration";
@@ -46,21 +47,12 @@ export function ConfigureDatabaseContainer() {
 
   const handleSaveConfiguration = async (config: DatabaseConfig) => {
     setIsSaveLoading(true);
-
     try {
       const result = await saveConfiguration(config);
       if (result.success) {
-        toast.success("Configuration Saved", {
-          description: "Database configured successfully. Reloading...",
+        toast.success("설정이 저장되었습니다.", {
+          description: "데이터베이스 설정이 성공적으로 저장되었습니다.",
         });
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        errorHandler.api(
-          new Error(result.error || "Unknown error"),
-          "Save Configuration"
-        );
       }
     } catch (error) {
       errorHandler.general(error, "Save Configuration");
@@ -70,11 +62,13 @@ export function ConfigureDatabaseContainer() {
   };
 
   return (
-    <ConfigureDatabaseForm
-      onTestConnection={handleTestConnection}
-      onSaveConfiguration={handleSaveConfiguration}
-      isTestLoading={isTestLoading}
-      isSaveLoading={isSaveLoading}
-    />
+    <ErrorBoundary>
+      <ConfigureDatabaseForm
+        onTestConnection={handleTestConnection}
+        onSaveConfiguration={handleSaveConfiguration}
+        isTestLoading={isTestLoading}
+        isSaveLoading={isSaveLoading}
+      />
+    </ErrorBoundary>
   );
 }

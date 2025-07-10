@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   DatabaseConfig,
   DatabaseConfigSchema,
-} from "@/entities/database/model";
+} from "@/entities/setup/model";
 import { Database, TestTube, Save, Loader2, Info } from "lucide-react";
 import { DATABASE_DEFAULTS, DATABASE_TYPES } from "@/common/constants/database";
 

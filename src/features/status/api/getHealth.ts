@@ -1,6 +1,6 @@
-import { safeApiFetch } from '@/shared/api/client'
-import { HealthStatus } from '@/entities/database/model'
+import { apiFetch } from '@/shared/api/client'
+import { DatabaseHealthStatus } from '@/entities/setup/model'
 
 export async function getHealth() {
-  return safeApiFetch<HealthStatus>('/health')
+  return apiFetch<DatabaseHealthStatus>('/health')
 }

@@ -3,20 +3,22 @@ import { persist } from "zustand/middleware";
 import {
   DatabaseSetupStatus,
   DatabaseHealthStatus,
-} from "@/entities/database/model";
+  RootAccountStatus,
+} from "@/entities/setup/model";
 
 interface SetupStore {
-  isSetupCompleted: boolean;
-  rootAccountExists: boolean;
+  // 실제 API 상태
   databaseSetupStatus: DatabaseSetupStatus | null;
+  rootAccountStatus: RootAccountStatus | null;
   databaseHealthStatus: DatabaseHealthStatus | null;
+  
+  // UI 상태
   isLoading: boolean;
   error: string | null;
 
   // Actions
-  setIsSetupCompleted: (isSetupCompleted: boolean) => void;
-  setRootAccountExists: (rootAccountExists: boolean) => void;
   setDatabaseSetupStatus: (status: DatabaseSetupStatus) => void;
+  setRootAccountStatus: (status: RootAccountStatus) => void;
   setDatabaseHealthStatus: (health: DatabaseHealthStatus) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -28,28 +30,28 @@ interface SetupStore {
 
 export const useSetupStore = create<SetupStore>()(
   persist(
-    (set, get) => ({
-      isSetupCompleted: false,
-      rootAccountExists: false,
+    (set) => ({
+      // 실제 API 상태
       databaseSetupStatus: null,
+      rootAccountStatus: null,
       databaseHealthStatus: null,
+      
+      // UI 상태
       isLoading: false,
       error: null,
 
-      setIsSetupCompleted: (isSetupCompleted) => set({ isSetupCompleted }),
-      setRootAccountExists: (rootAccountExists) => set({ rootAccountExists }),
+      // Actions
       setDatabaseSetupStatus: (status) => set({ databaseSetupStatus: status }),
-      setDatabaseHealthStatus: (health) =>
-        set({ databaseHealthStatus: health }),
+      setRootAccountStatus: (status) => set({ rootAccountStatus: status }),
+      setDatabaseHealthStatus: (health) => set({ databaseHealthStatus: health }),
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
       clearError: () => set({ error: null }),
 
       reset: () =>
         set({
-          isSetupCompleted: false,
-          rootAccountExists: false,
           databaseSetupStatus: null,
+          rootAccountStatus: null,
           databaseHealthStatus: null,
           isLoading: false,
           error: null,
@@ -58,9 +60,8 @@ export const useSetupStore = create<SetupStore>()(
     {
       name: "setup",
       partialize: (state) => ({
-        isSetupCompleted: state.isSetupCompleted,
         databaseSetupStatus: state.databaseSetupStatus,
-        rootAccountExists: state.rootAccountExists,
+        rootAccountStatus: state.rootAccountStatus,
       }),
     }
   )

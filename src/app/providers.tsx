@@ -3,7 +3,7 @@
 import type React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { ErrorBoundary } from "@/shared/components/ErrorBoundary";
+import { AppInitializer } from "@/shared/components/AppInitializer";
 import { Toaster } from "sonner";
 import { useState } from "react";
 
@@ -31,7 +31,7 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
+      <AppInitializer>
         {children}
         <Toaster
           position="top-right"
@@ -40,7 +40,8 @@ export function Providers({ children }: ProvidersProps) {
           duration={4000}
           theme="light"
         />
-      </ErrorBoundary>
+      </AppInitializer>
+
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

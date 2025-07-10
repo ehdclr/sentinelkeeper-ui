@@ -4,19 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Database, Settings, Activity } from "lucide-react";
 import Link from "next/link";
-import { SuspenseWrapper } from "@/shared/components/SuspenseWrapper";
-import { useAsyncData } from "@/shared/hooks/useAsyncData";
-import { getSetupStatus } from "@/features/status/api/getStatus";
 
 function HomePageContent() {
-  const { data: statusResponse, error } = useAsyncData(() => getSetupStatus());
-
-  if (error) {
-    console.warn("상태 확인 실패, 설정되지 않은 것으로 간주됩니다.", error);
-  }
-
-  const isConfigured = statusResponse?.data?.configured || false;
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -28,36 +17,17 @@ function HomePageContent() {
               SentinelKeeper
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              SentinelKeeper is for your infrastructure management and monitoring
+              SentinelKeeper is for your infrastructure management and
+              monitoring
             </p>
 
             <div className="flex justify-center space-x-4">
-              {isConfigured ? (
-                <>
-                  <Link href="/dashboard">
-                    <Button size="lg">
-                      <Activity className="h-5 w-5 mr-2" />
-                      View Dashboard
-                    </Button>
-                  </Link>
-                  <Link href="/setup">
-                    <Button variant="outline" size="lg">
-                      <Settings className="h-5 w-5 mr-2" />
-                      Setup
-                    </Button>
-                  </Link>
-                </>
-              ) : (
-                <Link href="/setup">
-                  <Button
-                    size="lg"
-                    className="hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-lg hover:scale-105 transition-all duration-300 hover:cursor-pointer"
-                  >
-                    <Settings className="h-5 w-5 mr-2" />
-                    Get Started
-                  </Button>
-                </Link>
-              )}
+              <Link href="/dashboard">
+                <Button size="lg">
+                  <Activity className="h-5 w-5 mr-2" />
+                  View Dashboard
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -109,12 +79,5 @@ function HomePageContent() {
 }
 
 export default function HomePage() {
-  return (
-    <SuspenseWrapper
-      loadingMessage="Loading application..."
-      loadingType="default"
-    >
-      <HomePageContent />
-    </SuspenseWrapper>
-  );
+  return <HomePageContent />;
 }

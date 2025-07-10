@@ -3,43 +3,62 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { SuspenseWrapper } from "@/shared/components/SuspenseWrapper";
-import { SetupDatabaseForm } from "@/widgets/setup-wizard/SetupDatabaseForm";
+import { SetupDatabaseForm } from "@/features/setup-database/ui/SetupDatabaseForm";
 import { RootAccountContainer } from "@/features/setup-root/ui/RootAccountContainer";
-import { StatusContainer } from "@/features/status/ui/StatusContainer";
-import { useSetupFlow } from "@/features/setup/hooks/useSetupFlow";
+import { useSetup } from "@/features/setup/hooks/useSetup";
+
 import {
   Settings,
   ArrowRight,
   CheckCircle,
   Database,
   User,
-  AlertTriangle,
 } from "lucide-react";
+
+interface Step {
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
+}
 
 export function SetupWizard() {
   const router = useRouter();
-  const {
-    steps,
-    currentStep,
-    allStepsCompleted,
-    canProceedToDashboard,
-    completeSetup,
-  } = useSetupFlow();
+  const { databaseSetupStatus, rootAccountStatus, isLoading } = useSetup();
+
+  // 설정 완료 여부 확인
+  const isSetupComplete =
+    (databaseSetupStatus?.configured || false) &&
+    (rootAccountStatus?.exists || false);
+
+  // 스텝 정의
+  const steps: Step[] = [
+    {
+      id: "database",
+      title: "Database Configuration",
+      description: "Configure your database connection",
+      completed: databaseSetupStatus?.configured || false,
+    },
+    {
+      id: "root-account",
+      title: "Root Account Setup",
+      description: "Create your root administrator account",
+      completed: rootAccountStatus?.exists || false,
+    },
+  ];
+
+  const totalSteps = steps.length;
+  const completedSteps = steps.filter((step) => step.completed).length;
+  const progressPercentage = (completedSteps / totalSteps) * 100;
 
   useEffect(() => {
-    if (allStepsCompleted && !canProceedToDashboard) {
-      completeSetup();
+    if (isSetupComplete) {
+      router.push("/dashboard");
     }
-  }, [allStepsCompleted, canProceedToDashboard, completeSetup]);
-
-  const completedSteps = steps.filter((step) => step.completed).length;
-  const totalSteps = steps.length;
-  const progressPercentage = (completedSteps / totalSteps) * 100;
+  }, [isSetupComplete, router]);
 
   const getStepIcon = (stepId: string, completed: boolean) => {
     if (completed) return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -54,76 +73,32 @@ export function SetupWizard() {
     }
   };
 
-  const renderCurrentStepContent = () => {
-    switch (currentStep) {
-      case "database":
-        return (
-          <SuspenseWrapper
-            loadingMessage="Loading database configuration..."
-            loadingType="setup"
-          >
-            <SetupDatabaseForm />
-          </SuspenseWrapper>
-        );
-      case "root-account":
-        return (
-          <SuspenseWrapper
-            loadingMessage="Loading root account setup..."
-            loadingType="setup"
-          >
-            <RootAccountContainer />
-          </SuspenseWrapper>
-        );
-      default:
-        return null;
-    }
-  };
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading setup status...</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (canProceedToDashboard) {
+  // 설정이 완료되었으면 대시보드로 이동
+  if (isSetupComplete) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
-            <div className="mb-8">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Setup Complete!
-              </h1>
-              <p className="text-gray-600">
-                SentinelKeeper has been successfully configured and is ready to
-                use.
-              </p>
-            </div>
-
-            <Card className="mb-8">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {steps.map((step) => (
-                    <div
-                      key={step.id}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        {getStepIcon(step.id, step.completed)}
-                        <div className="text-left">
-                          <h3 className="font-medium">{step.title}</h3>
-                          <p className="text-sm text-gray-600">
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="default" className="bg-green-500">
-                        Complete
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Button size="lg" onClick={() => router.push("/dashboard")}>
-              <ArrowRight className="mr-2 h-5 w-5" />
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Setup Complete!
+            </h1>
+            <p className="text-gray-600 mb-8">Redirecting to dashboard...</p>
+            <Button onClick={() => router.push("/dashboard")}>
               Go to Dashboard
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -167,8 +142,8 @@ export function SetupWizard() {
                   <div
                     key={step.id}
                     className={`flex items-center justify-between p-4 rounded-lg border ${
-                      currentStep === step.id
-                        ? "border-blue-200 bg-blue-50"
+                      step.completed
+                        ? "border-green-200 bg-green-50"
                         : "border-gray-200"
                     }`}
                   >
@@ -186,8 +161,6 @@ export function SetupWizard() {
                         <Badge variant="default" className="bg-green-500">
                           Complete
                         </Badge>
-                      ) : currentStep === step.id ? (
-                        <Badge variant="default">In Progress</Badge>
                       ) : (
                         <Badge variant="outline">Pending</Badge>
                       )}
@@ -198,38 +171,49 @@ export function SetupWizard() {
             </CardContent>
           </Card>
 
-          {/* Current Step Alert */}
-          {currentStep && (
-            <Alert className="mb-8">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Complete the{" "}
-                {steps.find((s) => s.id === currentStep)?.title.toLowerCase()}{" "}
-                to continue with the setup process.
-              </AlertDescription>
-            </Alert>
-          )}
+          {/* Setup Forms */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Database Setup */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Database Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {databaseSetupStatus?.configured ? (
+                  <div className="text-center p-4">
+                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      Database is configured
+                    </p>
+                  </div>
+                ) : (
+                  <SetupDatabaseForm />
+                )}
+              </CardContent>
+            </Card>
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Current Step Content */}
-            <div className="lg:col-span-2">{renderCurrentStepContent()}</div>
-
-            {/* Status Panel */}
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Status</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SuspenseWrapper
-                    loadingMessage="Loading status..."
-                    loadingType="status"
-                  >
-                    <StatusContainer />
-                  </SuspenseWrapper>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Root Account Setup */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Root Account Setup
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {rootAccountStatus?.exists ? (
+                  <div className="text-center p-4">
+                    <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Root account exists</p>
+                  </div>
+                ) : (
+                  <RootAccountContainer />
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

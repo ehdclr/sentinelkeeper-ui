@@ -16,29 +16,15 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
-import { useAsyncData } from '@/shared/hooks/useAsyncData'
-import { getSetupStatus } from '@/features/status/api/getStatus'
+import { useSetup } from '@/features/setup/hooks/useSetup'
 import { getHealth } from '@/features/status/api/getHealth'
 
 function StatusDashboardContent() {
-  const { 
-    data: statusResponse, 
-    refetch: refetchStatus,
-    isRefetching: isStatusRefetching
-  } = useAsyncData(() => getSetupStatus())
-  
-  const { 
-    data: healthResponse, 
-    refetch: refetchHealth,
-    isRefetching: isHealthRefetching
-  } = useAsyncData(() => getHealth())
 
-  const status = statusResponse?.data
-  const health = healthResponse?.data
-  const isRefetching = isStatusRefetching || isHealthRefetching
+  const { databaseSetupStatus, isLoading, error, refresh } = useSetup();
 
   // Redirect to setup if not configured
-  if (status && !status.configured) {
+  if (databaseSetupStatus && !databaseSetupStatus.configured) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md">

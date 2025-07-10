@@ -8,17 +8,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Settings, ArrowRight, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { useAsyncData } from "@/shared/hooks/useAsyncData";
-import { getSetupStatus } from "@/features/status/api/getStatus";
+import { useSetup } from "@/features/setup/hooks/useSetup";
 
 export const SetupDatabaseFormContent = () => {
-  const { data: statusResponse, error } = useAsyncData(() => getSetupStatus());
+  const { databaseSetupStatus, isLoading, error } = useSetup();
 
   if (error) {
     throw error; // Will be caught by ErrorBoundary
   }
 
-  const status = statusResponse?.data;
+  const status = databaseSetupStatus;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

@@ -1,8 +1,8 @@
 "use client";
-
-import type React from "react";
-
-import { useState } from "react";
+// src/features/setup-root/ui/RootAccountForm.tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RootFormSchema, RootAccountFormData } from "@/entities/setup/model";
 import {
   Card,
   CardContent,
@@ -15,10 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Key, Download, User } from "lucide-react";
-import type { RootAccountCreateRequest } from "@/entities/setup/model";
 
 interface RootAccountFormProps {
-  onSubmit: (data: RootAccountCreateRequest) => void;
+  onSubmit: (data: RootAccountFormData) => void;
   isLoading?: boolean;
   error?: Error | null;
   accountExists?: boolean;
@@ -30,22 +29,16 @@ export function RootAccountForm({
   error,
   accountExists,
 }: RootAccountFormProps) {
-  const [formData, setFormData] = useState<RootAccountCreateRequest>({
-    username: "",
-    password: "",
-    email: "",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<RootAccountFormData>({
+    resolver: zodResolver(RootFormSchema),
+    mode: "onChange",
+    defaultValues: { username: "root", password: "", email: "" },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  const handleInputChange =
-    (field: keyof RootAccountCreateRequest) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-    };
 
   if (accountExists) {
     return (
@@ -83,16 +76,17 @@ export function RootAccountForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* username은 고정, disabled */}
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
-              placeholder="admin"
-              value={formData.username}
-              onChange={handleInputChange("username")}
-              required
+              value="root"
+              disabled
+              readOnly
             />
+            <input type="hidden" value="root" {...register("username")} />
           </div>
 
           <div className="space-y-2">
@@ -101,10 +95,18 @@ export function RootAccountForm({
               id="password"
               type="password"
               placeholder="Enter secure password"
-              value={formData.password}
-              onChange={handleInputChange("password")}
-              required
+              {...register("password")}
+              className={errors.password ? "border-red-500" : ""}
+              disabled={isLoading}
             />
+            {errors.password && (
+              <p className="text-sm text-red-500">
+                8자 이상의 대문자, 소문자, 숫자를 포함해야 합니다.
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              8자 이상의 대문자, 소문자, 숫자를 포함해야 합니다.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -113,10 +115,15 @@ export function RootAccountForm({
               id="email"
               type="email"
               placeholder="admin@example.com"
-              value={formData.email}
-              onChange={handleInputChange("email")}
-              required
+              {...register("email")}
+              className={errors.email ? "border-red-500" : ""}
+              disabled={isLoading}
             />
+            {errors.email && (
+              <p className="text-sm text-red-500">
+                이메일 형식이 올바르지 않습니다.
+              </p>
+            )}
           </div>
 
           {error && (
@@ -128,31 +135,25 @@ export function RootAccountForm({
           <Alert>
             <Key className="h-4 w-4" />
             <AlertDescription>
-              A PEM file will be automatically downloaded after account
-              creation. Keep this file secure as it&apos;s required for
-              authentication.
+              PEM 파일이 자동으로 다운로드됩니다. 이 파일은 인증에 필요하므로
+              안전하게 보관하세요.
             </AlertDescription>
           </Alert>
 
           <Button
             type="submit"
             className="w-full"
-            disabled={
-              isLoading ||
-              !formData.username ||
-              !formData.password ||
-              !formData.email
-            }
+            disabled={isLoading || !isValid}
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Account...
+                계정 생성 중...
               </>
             ) : (
               <>
                 <Key className="mr-2 h-4 w-4" />
-                Create Account & Download PEM
+                계정 생성 & PEM 다운로드
               </>
             )}
           </Button>
