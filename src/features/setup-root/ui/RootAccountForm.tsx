@@ -20,7 +20,7 @@ interface RootAccountFormProps {
   onSubmit: (data: RootAccountFormData) => void;
   isLoading?: boolean;
   error?: Error | null;
-  accountExists?: boolean;
+  accountExists?: boolean | null;
 }
 
 export function RootAccountForm({

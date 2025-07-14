@@ -80,7 +80,3 @@ export interface DatabaseHealthStatus {
     };
   } | null;
 }
-
-export interface RootAccountStatus {
-  exists: boolean;
-}

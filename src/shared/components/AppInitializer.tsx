@@ -19,11 +19,10 @@ export function AppInitializer({ children }: AppInitializerProps) {
     if (isLoading) return;
 
     const dbConfigured = databaseSetupStatus?.configured || false;
-    console.log("dbConfigured", databaseSetupStatus);
-    const rootExists = rootAccountStatus?.exists || false;
-    console.log("rootExists", rootAccountStatus);
+    const rootExists = rootAccountStatus || false;
     const isSetupComplete = dbConfigured && rootExists;
-
+    console.log("rootExists", rootAccountStatus);
+    console.log("isSetupComplete", isSetupComplete);
     // 설정이 완료되었으면 상태 업데이트
     if (isSetupComplete) {
       router.push("/dashboard");

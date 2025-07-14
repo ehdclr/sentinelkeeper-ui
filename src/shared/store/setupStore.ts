@@ -3,22 +3,21 @@ import { persist } from "zustand/middleware";
 import {
   DatabaseSetupStatus,
   DatabaseHealthStatus,
-  RootAccountStatus,
 } from "@/entities/setup/model";
 
 interface SetupStore {
   // 실제 API 상태
   databaseSetupStatus: DatabaseSetupStatus | null;
-  rootAccountStatus: RootAccountStatus | null;
+  rootAccountStatus: boolean | null;
   databaseHealthStatus: DatabaseHealthStatus | null;
-  
+
   // UI 상태
   isLoading: boolean;
   error: string | null;
 
   // Actions
   setDatabaseSetupStatus: (status: DatabaseSetupStatus) => void;
-  setRootAccountStatus: (status: RootAccountStatus) => void;
+  setRootAccountStatus: (status: boolean) => void;
   setDatabaseHealthStatus: (health: DatabaseHealthStatus) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -35,7 +34,7 @@ export const useSetupStore = create<SetupStore>()(
       databaseSetupStatus: null,
       rootAccountStatus: null,
       databaseHealthStatus: null,
-      
+
       // UI 상태
       isLoading: false,
       error: null,
@@ -43,7 +42,8 @@ export const useSetupStore = create<SetupStore>()(
       // Actions
       setDatabaseSetupStatus: (status) => set({ databaseSetupStatus: status }),
       setRootAccountStatus: (status) => set({ rootAccountStatus: status }),
-      setDatabaseHealthStatus: (health) => set({ databaseHealthStatus: health }),
+      setDatabaseHealthStatus: (health) =>
+        set({ databaseHealthStatus: health }),
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
       clearError: () => set({ error: null }),

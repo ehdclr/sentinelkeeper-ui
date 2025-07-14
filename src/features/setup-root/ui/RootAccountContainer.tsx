@@ -36,16 +36,15 @@ export function RootAccountContainer() {
   });
 
   const handleCreateAccount = (data: RootAccountFormData) => {
-    console.log("ㅇㅁㄴㅇㅁㄴㅇㅁㄴㅇㅁㄴ", data);
     createMutation.mutate(data);
   };
 
   return (
     <RootAccountForm
-      handleCreateAccount={handleCreateAccount}
+      onSubmit={handleCreateAccount}
       isLoading={createMutation.isPending}
       error={createMutation.error}
-      accountExists={rootAccountStatus?.exists}
+      accountExists={rootAccountStatus}
     />
   );
 }

@@ -4,7 +4,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/shared/api/client";
 import { useSetupStore } from "@/shared/store/setupStore";
-import { DatabaseSetupStatus, RootAccountStatus } from "@/entities/setup/model";
+import { DatabaseSetupStatus } from "@/entities/setup/model";
 import { useEffect } from "react";
 
 // Query Keys
@@ -18,26 +18,22 @@ export const setupKeys = {
 const fetchDatabaseStatus = async (): Promise<DatabaseSetupStatus> => {
   const response = await apiFetch("/setup/status/db");
   // 실제 데이터만 반환
-  return response?.databaseSetupStatus ?? response;
+  return (response as any)?.databaseSetupStatus ?? response;
 };
 
-const fetchRootAccountStatus = async (): Promise<RootAccountStatus> => {
+const fetchRootAccountStatus = async (): Promise<boolean> => {
   try {
     const response = await apiFetch("/setup/status/root");
     // null이나 undefined 응답 처리
     if (!response) {
       console.warn("Root account status response is null/undefined, using default");
-      return {
-        exists: false,
-      };
+      return false;
     }
-    
-    return response;
+
+    return (response as any)?.rootAccountStatus ?? false;
   } catch (error) {
     console.warn("Failed to fetch root account status, using default:", error);
-    return {
-      exists: false,
-    };
+    return false;
   }
 };
 
@@ -100,7 +96,6 @@ export function useSetup() {
 
   useEffect(() => {
     if (rootStatus) {
-      console.log("Root account status received:", rootStatus);
       setRootAccountStatus(rootStatus);
     }
   }, [rootStatus, setRootAccountStatus]);
@@ -108,7 +103,7 @@ export function useSetup() {
   useEffect(() => {
     if (rootAccountError) {
       console.error("Failed to fetch root account status:", rootAccountError);
-      setRootAccountStatus({ exists: false });
+      setRootAccountStatus(false);
     }
   }, [rootAccountError, setRootAccountStatus]);
 
@@ -121,6 +116,7 @@ export function useSetup() {
     queryClient.invalidateQueries({ queryKey: setupKeys.database() });
     queryClient.invalidateQueries({ queryKey: setupKeys.rootAccount() });
   };
+  
 
   return {
     // Store에서 가져온 상태 (실제 저장된 상태)

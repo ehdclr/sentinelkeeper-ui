@@ -32,7 +32,7 @@ export function SetupWizard() {
   // 설정 완료 여부 확인
   const isSetupComplete =
     (databaseSetupStatus?.configured || false) &&
-    (rootAccountStatus?.exists || false);
+    (rootAccountStatus || false);
 
   // 스텝 정의
   const steps: Step[] = [
@@ -46,7 +46,7 @@ export function SetupWizard() {
       id: "root-account",
       title: "Root Account Setup",
       description: "Create your root administrator account",
-      completed: rootAccountStatus?.exists || false,
+      completed: rootAccountStatus || false,
     },
   ];
 
@@ -204,7 +204,7 @@ export function SetupWizard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {rootAccountStatus?.exists ? (
+                {rootAccountStatus ? (
                   <div className="text-center p-4">
                     <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Root account exists</p>

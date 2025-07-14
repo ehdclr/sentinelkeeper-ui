@@ -17,11 +17,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSetup } from '@/features/setup/hooks/useSetup'
-import { getHealth } from '@/features/status/api/getHealth'
 
 function StatusDashboardContent() {
 
-  const { databaseSetupStatus, isLoading, error, refresh } = useSetup();
+  const { databaseSetupStatus, isLoading, error, refresh, databaseHealthStatus } = useSetup();
 
   // Redirect to setup if not configured
   if (databaseSetupStatus && !databaseSetupStatus.configured) {
@@ -47,8 +46,7 @@ function StatusDashboardContent() {
   }
 
   const handleRefresh = () => {
-    refetchStatus()
-    refetchHealth()
+    refresh()
   }
 
   return (
@@ -76,10 +74,10 @@ function StatusDashboardContent() {
             
             <Button 
               onClick={handleRefresh} 
-              disabled={isRefetching}
+              disabled={isLoading}
               variant="outline"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
@@ -98,12 +96,12 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Status</p>
                     <p className="text-2xl font-bold">
-                      {health?.status === 'healthy' ? 'Healthy' : 
-                       health?.status === 'unhealthy' ? 'Unhealthy' : 'Unknown'}
+                      {databaseHealthStatus?.status === 'healthy' ? 'Healthy' : 
+                       databaseHealthStatus?.status === 'unhealthy' ? 'Unhealthy' : 'Unknown'}
                     </p>
                   </div>
                   <Activity className={`h-8 w-8 ${
-                    health?.status === 'healthy' ? 'text-green-500' : 'text-red-500'
+                    databaseHealthStatus?.status === 'healthy' ? 'text-green-500' : 'text-red-500'
                   }`} />
                 </div>
               </CardContent>
@@ -115,7 +113,7 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Database</p>
                     <p className="text-2xl font-bold capitalize">
-                      {status?.type || 'N/A'}
+                      {databaseSetupStatus?.type || 'N/A'}
                     </p>
                   </div>
                   <Database className="h-8 w-8 text-blue-500" />
@@ -129,11 +127,11 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Configuration</p>
                     <p className="text-2xl font-bold">
-                      {status?.locked ? 'Locked' : 'Unlocked'}
+                      {databaseSetupStatus?.locked ? 'Locked' : 'Unlocked'}
                     </p>
                   </div>
                   <Settings className={`h-8 w-8 ${
-                    status?.locked ? 'text-yellow-500' : 'text-gray-500'
+                    databaseSetupStatus?.locked ? 'text-yellow-500' : 'text-gray-500'
                   }`} />
                 </div>
               </CardContent>
@@ -145,8 +143,8 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Uptime</p>
                     <p className="text-2xl font-bold">
-                      {status?.createdAt ? 
-                        Math.floor((Date.now() - new Date(status.createdAt).getTime()) / (1000 * 60 * 60)) + 'h'
+                      {databaseSetupStatus?.createdAt ? 
+                        Math.floor((Date.now() - new Date(databaseSetupStatus.createdAt).getTime()) / (1000 * 60 * 60)) + 'h'
                         : 'N/A'
                       }
                     </p>
@@ -175,26 +173,26 @@ function StatusDashboardContent() {
                 <CardTitle>Configuration Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {status && (
+                {databaseSetupStatus && (
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Database Type</span>
-                      <Badge variant="outline">{status.type}</Badge>
+                      <Badge variant="outline">{databaseSetupStatus.type}</Badge>
                     </div>
                     
                     <Separator />
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Configuration Status</span>
-                      <Badge variant={status.configured ? "default" : "secondary"}>
-                        {status.configured ? 'Configured' : 'Not Configured'}
+                      <Badge variant={databaseSetupStatus.configured ? "default" : "secondary"}>
+                        {databaseSetupStatus.configured ? 'Configured' : 'Not Configured'}
                       </Badge>
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Lock Status</span>
-                      <Badge variant={status.locked ? "destructive" : "secondary"}>
-                        {status.locked ? 'Locked' : 'Unlocked'}
+                      <Badge variant={databaseSetupStatus.locked ? "destructive" : "secondary"}>
+                        {databaseSetupStatus.locked ? 'Locked' : 'Unlocked'}
                       </Badge>
                     </div>
                     
@@ -202,25 +200,25 @@ function StatusDashboardContent() {
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Config File</span>
-                      <Badge variant={status.configExists ? "default" : "secondary"}>
-                        {status.configExists ? 'Exists' : 'Missing'}
+                      <Badge variant={databaseSetupStatus.configExists ? "default" : "secondary"}>
+                        {databaseSetupStatus.configExists ? 'Exists' : 'Missing'}
                       </Badge>
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Lock File</span>
-                      <Badge variant={status.lockExists ? "default" : "secondary"}>
-                        {status.lockExists ? 'Exists' : 'Missing'}
+                      <Badge variant={databaseSetupStatus.lockExists ? "default" : "secondary"}>
+                        {databaseSetupStatus.lockExists ? 'Exists' : 'Missing'}
                       </Badge>
                     </div>
                     
-                    {status.createdAt && (
+                    {databaseSetupStatus.createdAt && (
                       <>
                         <Separator />
                         <div className="space-y-1">
                           <span className="text-sm font-medium">Configured At</span>
                           <p className="text-sm text-gray-600">
-                            {new Date(status.createdAt).toLocaleString()}
+                            {new Date(databaseSetupStatus.createdAt).toLocaleString()}
                           </p>
                         </div>
                       </>
@@ -240,10 +238,10 @@ function StatusDashboardContent() {
               <div className="flex flex-wrap gap-4">
                 <Button 
                   onClick={handleRefresh} 
-                  disabled={isRefetching}
+                  disabled={isLoading}
                   variant="outline"
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                   Refresh Status
                 </Button>
                 
