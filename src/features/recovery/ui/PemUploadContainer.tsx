@@ -28,10 +28,10 @@ export function PemUploadContainer({ onValidPEM }: PemUploadContainerProps) {
       onSuccess: (response) => {
         if (response.success && response.data.valid) {
           toast.success(response.message);
-          
+
           onValidPEM(
             response.data.username, // keyId 대신 username 사용
-            response.data.username  // userId도 username 사용
+            response.data.username // userId도 username 사용
           );
         } else {
           toast.error(response.data.message || "PEM key validation failed");

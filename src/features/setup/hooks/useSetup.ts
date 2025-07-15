@@ -18,7 +18,7 @@ export const setupKeys = {
 const fetchDatabaseStatus = async (): Promise<DatabaseSetupStatus> => {
   const response = await apiFetch("/setup/status/db");
   // 실제 데이터만 반환
-  return (response as any)?.databaseSetupStatus ?? response;
+  return (response as any)?.data?.databaseSetupStatus ?? response;
 };
 
 const fetchRootAccountStatus = async (): Promise<boolean> => {
@@ -26,11 +26,13 @@ const fetchRootAccountStatus = async (): Promise<boolean> => {
     const response = await apiFetch("/setup/status/root");
     // null이나 undefined 응답 처리
     if (!response) {
-      console.warn("Root account status response is null/undefined, using default");
+      console.warn(
+        "Root account status response is null/undefined, using default"
+      );
       return false;
     }
 
-    return (response as any)?.rootAccountExists ?? false;
+    return (response as any)?.data?.rootAccountExists ?? false;
   } catch (error) {
     console.warn("Failed to fetch root account status, using default:", error);
     return false;
@@ -99,7 +101,7 @@ export function useSetup() {
       setRootAccountStatus(rootStatus);
     }
   }, [rootStatus, setRootAccountStatus]);
-  
+
   useEffect(() => {
     if (rootAccountError) {
       console.error("Failed to fetch root account status:", rootAccountError);
@@ -116,7 +118,6 @@ export function useSetup() {
     queryClient.invalidateQueries({ queryKey: setupKeys.database() });
     queryClient.invalidateQueries({ queryKey: setupKeys.rootAccount() });
   };
-  
 
   return {
     // Store에서 가져온 상태 (실제 저장된 상태)
