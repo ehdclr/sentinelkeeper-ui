@@ -1,26 +1,31 @@
-'use client'
+"use client";
 
-import { SuspenseWrapper } from '@/shared/components/SuspenseWrapper'
-import { StatusContainer } from '@/features/status/ui/StatusContainer'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { 
-  RefreshCw, 
-  Settings, 
-  Database, 
+import { SuspenseWrapper } from "@/shared/components/SuspenseWrapper";
+import { StatusContainer } from "@/features/status/ui/StatusContainer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  RefreshCw,
+  Settings,
+  Database,
   Activity,
   Clock,
   ArrowLeft,
-  AlertTriangle
-} from 'lucide-react'
-import Link from 'next/link'
-import { useSetup } from '@/features/setup/hooks/useSetup'
+  AlertTriangle,
+} from "lucide-react";
+import Link from "next/link";
+import { useSetup } from "@/features/setup/hooks/useSetup";
 
 function StatusDashboardContent() {
-
-  const { databaseSetupStatus, isLoading, error, refresh, databaseHealthStatus } = useSetup();
+  const {
+    databaseSetupStatus,
+    isLoading,
+    error,
+    refresh,
+    databaseHealthStatus,
+  } = useSetup();
 
   // Redirect to setup if not configured
   if (databaseSetupStatus && !databaseSetupStatus.configured) {
@@ -42,12 +47,12 @@ function StatusDashboardContent() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   const handleRefresh = () => {
-    refresh()
-  }
+    refresh();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,13 +76,14 @@ function StatusDashboardContent() {
                 </p>
               </div>
             </div>
-            
-            <Button 
-              onClick={handleRefresh} 
+            <Button
+              onClick={handleRefresh}
               disabled={isLoading}
               variant="outline"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -87,7 +93,6 @@ function StatusDashboardContent() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          
           {/* Quick Stats */}
           <div className="grid md:grid-cols-4 gap-6 mb-8">
             <Card>
@@ -96,13 +101,20 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Status</p>
                     <p className="text-2xl font-bold">
-                      {databaseHealthStatus?.status === 'healthy' ? 'Healthy' : 
-                       databaseHealthStatus?.status === 'unhealthy' ? 'Unhealthy' : 'Unknown'}
+                      {databaseHealthStatus?.status === "healthy"
+                        ? "Healthy"
+                        : databaseHealthStatus?.status === "unhealthy"
+                        ? "Unhealthy"
+                        : "Unknown"}
                     </p>
                   </div>
-                  <Activity className={`h-8 w-8 ${
-                    databaseHealthStatus?.status === 'healthy' ? 'text-green-500' : 'text-red-500'
-                  }`} />
+                  <Activity
+                    className={`h-8 w-8 ${
+                      databaseHealthStatus?.status === "healthy"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -111,9 +123,11 @@ function StatusDashboardContent() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Database</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Database
+                    </p>
                     <p className="text-2xl font-bold capitalize">
-                      {databaseSetupStatus?.type || 'N/A'}
+                      {databaseSetupStatus?.type || "N/A"}
                     </p>
                   </div>
                   <Database className="h-8 w-8 text-blue-500" />
@@ -125,14 +139,20 @@ function StatusDashboardContent() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Configuration</p>
+                    <p className="text-sm font-medium text-gray-600">
+                      Configuration
+                    </p>
                     <p className="text-2xl font-bold">
-                      {databaseSetupStatus?.locked ? 'Locked' : 'Unlocked'}
+                      {databaseSetupStatus?.locked ? "Locked" : "Unlocked"}
                     </p>
                   </div>
-                  <Settings className={`h-8 w-8 ${
-                    databaseSetupStatus?.locked ? 'text-yellow-500' : 'text-gray-500'
-                  }`} />
+                  <Settings
+                    className={`h-8 w-8 ${
+                      databaseSetupStatus?.locked
+                        ? "text-yellow-500"
+                        : "text-gray-500"
+                    }`}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -143,10 +163,15 @@ function StatusDashboardContent() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Uptime</p>
                     <p className="text-2xl font-bold">
-                      {databaseSetupStatus?.createdAt ? 
-                        Math.floor((Date.now() - new Date(databaseSetupStatus.createdAt).getTime()) / (1000 * 60 * 60)) + 'h'
-                        : 'N/A'
-                      }
+                      {databaseSetupStatus?.createdAt
+                        ? Math.floor(
+                            (Date.now() -
+                              new Date(
+                                databaseSetupStatus.createdAt
+                              ).getTime()) /
+                              (1000 * 60 * 60)
+                          ) + "h"
+                        : "N/A"}
                     </p>
                   </div>
                   <Clock className="h-8 w-8 text-purple-500" />
@@ -177,48 +202,77 @@ function StatusDashboardContent() {
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Database Type</span>
-                      <Badge variant="outline">{databaseSetupStatus.type}</Badge>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Configuration Status</span>
-                      <Badge variant={databaseSetupStatus.configured ? "default" : "secondary"}>
-                        {databaseSetupStatus.configured ? 'Configured' : 'Not Configured'}
+                      <Badge variant="outline">
+                        {databaseSetupStatus.type}
                       </Badge>
                     </div>
-                    
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        Configuration Status
+                      </span>
+                      <Badge
+                        variant={
+                          databaseSetupStatus.configured
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {databaseSetupStatus.configured
+                          ? "Configured"
+                          : "Not Configured"}
+                      </Badge>
+                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Lock Status</span>
-                      <Badge variant={databaseSetupStatus.locked ? "destructive" : "secondary"}>
-                        {databaseSetupStatus.locked ? 'Locked' : 'Unlocked'}
+                      <Badge
+                        variant={
+                          databaseSetupStatus.locked
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
+                        {databaseSetupStatus.locked ? "Locked" : "Unlocked"}
                       </Badge>
                     </div>
-                    
                     <Separator />
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Config File</span>
-                      <Badge variant={databaseSetupStatus.configExists ? "default" : "secondary"}>
-                        {databaseSetupStatus.configExists ? 'Exists' : 'Missing'}
+                      <Badge
+                        variant={
+                          databaseSetupStatus.configExists
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {databaseSetupStatus.configExists
+                          ? "Exists"
+                          : "Missing"}
                       </Badge>
                     </div>
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Lock File</span>
-                      <Badge variant={databaseSetupStatus.lockExists ? "default" : "secondary"}>
-                        {databaseSetupStatus.lockExists ? 'Exists' : 'Missing'}
+                      <Badge
+                        variant={
+                          databaseSetupStatus.lockExists
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {databaseSetupStatus.lockExists ? "Exists" : "Missing"}
                       </Badge>
                     </div>
-                    
                     {databaseSetupStatus.createdAt && (
                       <>
                         <Separator />
                         <div className="space-y-1">
-                          <span className="text-sm font-medium">Configured At</span>
+                          <span className="text-sm font-medium">
+                            Configured At
+                          </span>
                           <p className="text-sm text-gray-600">
-                            {new Date(databaseSetupStatus.createdAt).toLocaleString()}
+                            {new Date(
+                              databaseSetupStatus.createdAt
+                            ).toLocaleString()}
                           </p>
                         </div>
                       </>
@@ -236,15 +290,18 @@ function StatusDashboardContent() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4">
-                <Button 
-                  onClick={handleRefresh} 
+                <Button
+                  onClick={handleRefresh}
                   disabled={isLoading}
                   variant="outline"
                 >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 mr-2 ${
+                      isLoading ? "animate-spin" : ""
+                    }`}
+                  />
                   Refresh Status
                 </Button>
-                
                 <Link href="/setup">
                   <Button variant="outline">
                     <Settings className="h-4 w-4 mr-2" />
@@ -257,7 +314,7 @@ function StatusDashboardContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function StatusDashboard() {
@@ -268,5 +325,5 @@ export function StatusDashboard() {
     >
       <StatusDashboardContent />
     </SuspenseWrapper>
-  )
+  );
 }

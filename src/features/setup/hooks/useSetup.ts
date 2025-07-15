@@ -30,7 +30,7 @@ const fetchRootAccountStatus = async (): Promise<boolean> => {
       return false;
     }
 
-    return (response as any)?.rootAccountStatus ?? false;
+    return (response as any)?.rootAccountExists ?? false;
   } catch (error) {
     console.warn("Failed to fetch root account status, using default:", error);
     return false;

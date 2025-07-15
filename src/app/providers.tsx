@@ -41,7 +41,6 @@ export function Providers({ children }: ProvidersProps) {
           theme="light"
         />
       </AppInitializer>
-
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

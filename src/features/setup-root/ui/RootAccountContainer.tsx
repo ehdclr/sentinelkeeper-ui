@@ -1,4 +1,3 @@
-// src/features/setup-root/ui/RootAccountContainer.tsx
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
@@ -13,30 +12,57 @@ export function RootAccountContainer() {
 
   const createMutation = useMutation({
     mutationFn: rootAccountApi,
-    onSuccess: (data) => {
-      toast.success("Root account created successfully! PEM file downloaded.");
-
-      // PEM 파일 다운로드
-      const blob = new Blob([data.pemFile], { type: "application/x-pem-file" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sentinel-root-${data.user.username}.pem`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      // 상태 새로고침
-      refresh();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to create root account");
-    },
+    // onSuccess, onError 제거
   });
 
-  const handleCreateAccount = (data: RootAccountFormData) => {
-    createMutation.mutate(data);
+  const handleCreateAccount = async (data: RootAccountFormData) => {
+    try {
+      const result = await createMutation.mutateAsync(data);
+      console.log("Success response data:", result);
+      
+      // 성공 처리
+      if (!result) {
+        toast.error("서버 응답이 올바르지 않습니다.");
+        return;
+      }
+
+      const algorithmText = result.algorithm === 'ed25519' ? 'Ed25519' : 'Symmetric';
+      toast.success(
+        `Root account created successfully! ${algorithmText} PEM file downloaded.`,
+        {
+          description: `Mode: ${result.mode || 'Unknown'}`,
+          duration: 5000,
+        }
+      );
+
+      // PEM 파일 다운로드
+      if (result.pemContent && result.filename) {
+        const blob = new Blob([result.pemContent], { 
+          type: "application/x-pem-file" 
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // 보안 알림
+      if (result.algorithm === 'ed25519') {
+        toast.info("🔐 Zero-Knowledge Security", {
+          description: "Your private key is not stored on the server. Keep the PEM file safe!",
+          duration: 8000,
+        });
+      }
+
+      refresh();
+    } catch (error) {
+      console.error("Account creation error:", error);
+      toast.error((error as Error).message || "계정 생성에 실패했습니다.");
+    }
   };
 
   return (

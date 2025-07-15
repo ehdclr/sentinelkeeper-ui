@@ -9,12 +9,14 @@ import { DatabaseConfig } from "@/entities/setup/model";
 import { errorHandler } from "@/shared/lib/errorHandler";
 import { testConnection } from "../api/testConnection";
 import { saveConfiguration } from "../api/saveConfiguration";
+import { useRouter } from "next/navigation";
 
 export function ConfigureDatabaseContainer() {
   const { databaseSetupStatus } = useSetupStore();
   const [isTestLoading, setIsTestLoading] = useState(false);
   const [isSaveLoading, setIsSaveLoading] = useState(false);
-
+  const router = useRouter();
+  
   if (databaseSetupStatus?.configured) {
     return (
       <div className="text-center p-6">
@@ -54,6 +56,7 @@ export function ConfigureDatabaseContainer() {
           description: "데이터베이스 설정이 성공적으로 저장되었습니다.",
         });
       }
+      router.push("/setup");
     } catch (error) {
       errorHandler.general(error, "Save Configuration");
     } finally {

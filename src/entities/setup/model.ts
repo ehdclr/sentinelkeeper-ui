@@ -26,7 +26,7 @@ export const DatabaseConfigSchema = z.discriminatedUnion("type", [
 ]);
 
 export const RootFormSchema = z.object({
-  username: z.literal("root"), // 무조건 "root"만 허용
+  username: z.string().min(1, "Username is required"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters long")
@@ -41,7 +41,7 @@ export const RootFormSchema = z.object({
 export type RootAccountFormData = z.infer<typeof RootFormSchema>;
 
 export const RootAccountSchema = z.object({
-  exists: z.boolean(),
+  rootAccountExists: z.boolean(),
 });
 
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;

@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   DatabaseSetupStatus,
-  DatabaseHealthStatus,
+  DatabaseHealthStatus, 
 } from "@/entities/setup/model";
 
 interface SetupStore {
@@ -43,7 +43,7 @@ export const useSetupStore = create<SetupStore>()(
       setDatabaseSetupStatus: (status) => set({ databaseSetupStatus: status }),
       setRootAccountStatus: (status) => set({ rootAccountStatus: status }),
       setDatabaseHealthStatus: (health) =>
-        set({ databaseHealthStatus: health }),
+      set({ databaseHealthStatus: health }),
       setLoading: (loading) => set({ isLoading: loading }),
       setError: (error) => set({ error }),
       clearError: () => set({ error: null }),

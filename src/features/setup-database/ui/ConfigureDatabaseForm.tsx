@@ -20,7 +20,7 @@ import {
   DatabaseConfigSchema,
 } from "@/entities/setup/model";
 import { Database, TestTube, Save, Loader2, Info } from "lucide-react";
-import { DATABASE_DEFAULTS, DATABASE_TYPES } from "@/common/constants/database";
+import { DATABASE_DEFAULTS, DATABASE_TYPES } from "@/shared/constants/database";
 
 interface ConfigureDatabaseFormProps {
   onTestConnection: (config: DatabaseConfig) => void;
