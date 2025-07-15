@@ -72,7 +72,8 @@ const findMatchingRule = (context: RouteContext): string | null => {
 const NO_SIDEBAR_PAGES = [
   "/login",
   "/404",
-  "/not-found"
+  "/not-found",
+  "/recovery",
 ];
 
 export function AppInitializer({ children }: AppInitializerProps) {

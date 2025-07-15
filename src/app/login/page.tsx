@@ -1,25 +1,41 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Home, Eye, EyeOff, Loader2 } from "lucide-react"
-import { useAuthStore } from "@/shared/store/authStore"
-import type { User } from "@/shared/types"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { Eye, EyeOff, Loader2, Shield, Key } from "lucide-react";
+import Image from "next/image";
+import { useAuthStore } from "@/shared/store/authStore";
+import type { User } from "@/shared/types";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
-})
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 
 // Mock users for demo
 const mockUsers: User[] = [
@@ -41,14 +57,14 @@ const mockUsers: User[] = [
     lastLogin: new Date().toISOString(),
     isActive: true,
   },
-]
+];
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
-  const { login } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const { login } = useAuthStore();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -56,38 +72,40 @@ export default function LoginPage() {
       username: "",
       password: "",
     },
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Mock authentication
-      const user = mockUsers.find((u) => u.username === data.username && data.password === "password123")
+      const user = mockUsers.find(
+        (u) => u.username === data.username && data.password === "password123"
+      );
 
       if (!user) {
-        setError("Invalid username or password")
-        return
+        setError("Invalid username or password");
+        return;
       }
 
       // Update last login
       const updatedUser = {
         ...user,
         lastLogin: new Date().toISOString(),
-      }
+      };
 
-      login(updatedUser)
-      router.push("/dashboard")
+      login(updatedUser);
+      router.push("/dashboard");
     } catch (err) {
-      setError("Login failed. Please try again.")
+      setError("Login failed. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -95,9 +113,13 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <Home className="h-8 w-8 text-white" />
-            </div>
+            <Image
+              src="/sentinel-logo1.webp"
+              alt="Sentinel"
+              width={80}
+              height={80}
+              className="rounded-full"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">Sentinel</h1>
           <p className="text-gray-600 mt-2">System Monitoring Platform</p>
@@ -107,11 +129,16 @@ export default function LoginPage() {
         <Card>
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
-            <CardDescription>Enter your credentials to access the dashboard</CardDescription>
+            <CardDescription>
+              Enter your credentials to access the dashboard
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="username"
@@ -176,6 +203,22 @@ export default function LoginPage() {
                 </Button>
               </form>
             </Form>
+
+            {/* Recovery Link */}
+            <div className="mt-6">
+              <Separator />
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600 mb-3">
+                  Forgot your root account password?
+                </p>
+                <Link href="/recovery">
+                  <Button variant="outline" className="w-full bg-transparent">
+                    <Key className="w-4 h-4 mr-2" />
+                    Recover with PEM Key
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -187,15 +230,28 @@ export default function LoginPage() {
           <CardContent className="space-y-2">
             <div className="text-sm">
               <div className="font-medium">Root User:</div>
-              <div className="text-gray-600">Username: admin | Password: password123</div>
+              <div className="text-gray-600">
+                Username: admin | Password: password123
+              </div>
             </div>
             <div className="text-sm">
               <div className="font-medium">Regular User:</div>
-              <div className="text-gray-600">Username: user1 | Password: password123</div>
+              <div className="text-gray-600">
+                Username: user1 | Password: password123
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Security Notice */}
+        <Alert className="mt-6">
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Security:</strong> Root account recovery requires PEM key
+            authentication for enhanced security.
+          </AlertDescription>
+        </Alert>
       </div>
     </div>
-  )
+  );
 }
