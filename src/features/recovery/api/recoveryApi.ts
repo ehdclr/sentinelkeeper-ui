@@ -45,10 +45,10 @@ export const recoveryApi = {
     });
   },
 
-  resetPassword: async (token: string, newPassword: string): Promise<void> => {
+  resetPassword: async (pemContent: string, newPassword: string): Promise<void> => {
     return apiFetch("/users/root/password-reset", {
       method: "POST",
-      body: JSON.stringify({ token, newPassword }),
+      body: JSON.stringify({ pemContent, newPassword }),
     });
   },
 };

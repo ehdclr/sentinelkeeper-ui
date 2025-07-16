@@ -1,16 +1,36 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Progress } from "@/components/ui/progress"
-import { Eye, EyeOff, CheckCircle, XCircle, Loader2, Shield } from 'lucide-react'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import {
+  Eye,
+  EyeOff,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Shield,
+} from "lucide-react";
 
 const passwordSchema = z
   .object({
@@ -20,27 +40,34 @@ const passwordSchema = z
       .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
       .regex(/[a-z]/, "Password must contain at least one lowercase letter")
       .regex(/[0-9]/, "Password must contain at least one number")
-      .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+      .regex(
+        /[^A-Za-z0-9]/,
+        "Password must contain at least one special character"
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  })
+  });
 
-type PasswordFormData = z.infer<typeof passwordSchema>
+type PasswordFormData = z.infer<typeof passwordSchema>;
 
-interface PasswordResetProps {
-  userId: string
-  onSuccess: () => void
-  onCancel: () => void
+interface PasswordResetFormProps {
+  onSubmit: (password: string) => void;
+  isLoading: boolean;
+  error: string | null;
+  onCancel: () => void;
 }
 
-const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+const PasswordResetForm = ({
+  onSubmit,
+  isLoading,
+  error,
+  onCancel,
+}: PasswordResetFormProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
@@ -48,56 +75,35 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
       newPassword: "",
       confirmPassword: "",
     },
-  })
+  });
 
-  const password = form.watch("newPassword")
+  const password = form.watch("newPassword");
 
   // Password strength calculation
   const getPasswordStrength = (pwd: string) => {
-    let score = 0
-    if (pwd.length >= 8) score += 25
-    if (/[A-Z]/.test(pwd)) score += 25
-    if (/[a-z]/.test(pwd)) score += 25
-    if (/[0-9]/.test(pwd)) score += 25
-    if (/[^A-Za-z0-9]/.test(pwd)) score += 25
-    if (pwd.length >= 12) score += 25
-    return Math.min(score, 100)
-  }
+    let score = 0;
+    if (pwd.length >= 8) score += 25;
+    if (/[A-Z]/.test(pwd)) score += 25;
+    if (/[a-z]/.test(pwd)) score += 25;
+    if (/[0-9]/.test(pwd)) score += 25;
+    if (/[^A-Za-z0-9]/.test(pwd)) score += 25;
+    if (pwd.length >= 12) score += 25;
+    return Math.min(score, 100);
+  };
 
-  const passwordStrength = getPasswordStrength(password)
-  const getStrengthColor = (strength: number) => {
-    if (strength < 50) return "bg-red-500"
-    if (strength < 75) return "bg-yellow-500"
-    return "bg-green-500"
-  }
+  const passwordStrength = getPasswordStrength(password);
 
   const getStrengthText = (strength: number) => {
-    if (strength < 25) return "Very Weak"
-    if (strength < 50) return "Weak"
-    if (strength < 75) return "Good"
-    if (strength < 100) return "Strong"
-    return "Very Strong"
-  }
+    if (strength < 25) return "Very Weak";
+    if (strength < 50) return "Weak";
+    if (strength < 75) return "Good";
+    if (strength < 100) return "Strong";
+    return "Very Strong";
+  };
 
-  const onSubmit = async (data: PasswordFormData) => {
-    setIsLoading(true)
-    setError("")
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Mock password reset
-      console.log("Resetting password for user:", userId)
-      console.log("New password:", data.newPassword)
-
-      onSuccess()
-    } catch (err) {
-      setError("Failed to reset password. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const handleSubmit = (data: PasswordFormData) => {
+    onSubmit(data.newPassword);
+  };
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -106,11 +112,13 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
           <Shield className="w-5 h-5 text-blue-600" />
           <CardTitle>Reset Root Password</CardTitle>
         </div>
-        <CardDescription>Create a new secure password for your root account</CardDescription>
+        <CardDescription>
+          Create a new secure password for your root account
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="newPassword"
@@ -119,7 +127,11 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input type={showPassword ? "text" : "password"} placeholder="Enter new password" {...field} />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter new password"
+                        {...field}
+                      />
                       <Button
                         type="button"
                         variant="ghost"
@@ -147,8 +159,8 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
                             passwordStrength < 50
                               ? "text-red-600"
                               : passwordStrength < 75
-                                ? "text-yellow-600"
-                                : "text-green-600"
+                              ? "text-yellow-600"
+                              : "text-green-600"
                           }`}
                         >
                           {getStrengthText(passwordStrength)}
@@ -221,7 +233,9 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
                         variant="ghost"
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4 text-gray-400" />
@@ -253,7 +267,11 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading || passwordStrength < 75} className="flex-1">
+              <Button
+                type="submit"
+                disabled={isLoading || passwordStrength < 75}
+                className="flex-1"
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -268,7 +286,7 @@ const PasswordReset = ({ userId, onSuccess, onCancel }: PasswordResetProps) => {
         </Form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default PasswordReset;
+export default PasswordResetForm; 

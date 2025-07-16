@@ -8,7 +8,7 @@ import { recoveryApi } from "../api/recoveryApi";
 import PemUploadForm from "./PemUploadForm";
 
 interface PemUploadContainerProps {
-  onValidPEM: (keyId: string, userId: string) => void;
+  onValidPEM: (keyId: string, userId: string, pemKey: string) => void;
 }
 
 export function PemUploadContainer({ onValidPEM }: PemUploadContainerProps) {
@@ -24,6 +24,8 @@ export function PemUploadContainer({ onValidPEM }: PemUploadContainerProps) {
       return;
     }
 
+    console.log("pemContent", pemContent)
+
     validateMutation.mutate(pemContent, {
       onSuccess: (response) => {
         if (response.success && response.data.valid) {
@@ -31,7 +33,8 @@ export function PemUploadContainer({ onValidPEM }: PemUploadContainerProps) {
 
           onValidPEM(
             response.data.username, // keyId 대신 username 사용
-            response.data.username // userId도 username 사용
+            response.data.username, // userId도 username 사용
+            pemContent // PEM 키 내용 전달
           );
         } else {
           toast.error(response.data.message || "PEM key validation failed");

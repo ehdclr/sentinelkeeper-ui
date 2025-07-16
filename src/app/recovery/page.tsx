@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Shield, CheckCircle, Key } from "lucide-react";
 import { PemUploadContainer } from "@/features/recovery/ui/PemUploadContainer";
-import PasswordReset from "@/features/recovery/ui/PasswordReset";
+import { PasswordResetContainer } from "@/features/recovery/ui/PasswordResetContainer";
+import { StepIndicator } from "@/features/recovery/ui/StepIndicator";
 import { useRecovery } from "@/features/recovery/hooks/useRecovery";
 
 type RecoveryStep = "upload" | "reset" | "success";
@@ -21,79 +22,137 @@ type RecoveryStep = "upload" | "reset" | "success";
 export default function RecoveryPage() {
   const [currentStep, setCurrentStep] = useState<RecoveryStep>("upload");
   const [validatedUserId, setValidatedUserId] = useState<string>("");
+  const [pemContent, setPemContent] = useState<string>(""); // 토큰 대신 PEM 키 저장
   const router = useRouter();
 
-  const { createRecoveryRequest, clearRecoverySession } = useRecovery();
+  // useRecovery 훅 제거 - 불필요
 
-  const handleValidPEM = async (keyId: string, userId: string) => {
-    try {
-      console.log("keyId", keyId);
-      await createRecoveryRequest(keyId);
-      setValidatedUserId(userId);
-      setCurrentStep("reset");
-    } catch (error) {
-      console.error("Failed to create recovery request:", error);
-    }
+  const handleValidPEM = async (
+    keyId: string,
+    userId: string,
+    pemKey: string
+  ) => {
+    // createRecoveryRequest 호출 제거
+    setValidatedUserId(userId);
+    setPemContent(pemKey);
+    setCurrentStep("reset");
   };
 
   const handlePasswordResetSuccess = () => {
     setCurrentStep("success");
-    clearRecoverySession();
+    // clearRecoverySession 호출 제거
   };
 
   const handleBackToLogin = () => {
     router.push("/login");
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      <div className="flex items-center space-x-4">
-        <div
-          className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep === "upload"
-              ? "bg-blue-600 text-white"
-              : currentStep === "reset" || currentStep === "success"
-              ? "bg-green-600 text-white"
-              : "bg-gray-300 text-gray-600"
-          }`}
-        >
-          <Key className="w-4 h-4" />
-        </div>
-        <div
-          className={`w-12 h-0.5 ${
-            currentStep === "reset" || currentStep === "success"
-              ? "bg-green-600"
-              : "bg-gray-300"
-          }`}
-        />
-        <div
-          className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep === "reset"
-              ? "bg-blue-600 text-white"
-              : currentStep === "success"
-              ? "bg-green-600 text-white"
-              : "bg-gray-300 text-gray-600"
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-        </div>
-        <div
-          className={`w-12 h-0.5 ${
-            currentStep === "success" ? "bg-green-600" : "bg-gray-300"
-          }`}
-        />
-        <div
-          className={`flex items-center justify-center w-8 h-8 rounded-full ${
-            currentStep === "success"
-              ? "bg-green-600 text-white"
-              : "bg-gray-300 text-gray-600"
-          }`}
-        >
-          <CheckCircle className="w-4 h-4" />
-        </div>
-      </div>
+  const renderPemUploadStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Key className="w-5 h-5" />
+          Step 1: Verify PEM Key
+        </CardTitle>
+        <CardDescription>
+          Upload or paste your private PEM key to verify your identity as the
+          root user
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <PemUploadContainer onValidPEM={handleValidPEM} />
+      </CardContent>
+    </Card>
+  );
+
+  const renderPasswordResetStep = () => (
+    <div className="space-y-6">
+      <Alert>
+        <CheckCircle className="h-4 w-4" />
+        <AlertDescription>
+          PEM key verified successfully! You can now reset your password.
+        </AlertDescription>
+      </Alert>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5" />
+            Step 2: Reset Password
+          </CardTitle>
+          <CardDescription>
+            Create a new secure password for your root account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PasswordResetContainer
+            userId={validatedUserId}
+            pemContent={pemContent} // 토큰 대신 PEM 키 전달
+            onSuccess={handlePasswordResetSuccess}
+            onCancel={() => setCurrentStep("upload")}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
+
+  const renderSuccessStep = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-green-600">
+          <CheckCircle className="w-5 h-5" />
+          Recovery Complete!
+        </CardTitle>
+        <CardDescription>
+          Your root account password has been successfully reset
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Alert>
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Success!</strong> Your password has been reset. You can now
+            log in with your new credentials.
+          </AlertDescription>
+        </Alert>
+
+        <div className="space-y-3">
+          <h4 className="font-medium text-gray-900">Next Steps:</h4>
+          <ul className="space-y-2 text-sm text-gray-600">
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Log in with your new password
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Consider updating your PEM keys
+            </li>
+            <li className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Review security settings
+            </li>
+          </ul>
+        </div>
+
+        <Button onClick={handleBackToLogin} className="w-full" size="lg">
+          Continue to Login
+        </Button>
+      </CardContent>
+    </Card>
+  );
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case "upload":
+        return renderPemUploadStep();
+      case "reset":
+        return renderPasswordResetStep();
+      case "success":
+        return renderSuccessStep();
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -112,7 +171,7 @@ export default function RecoveryPage() {
         </div>
 
         {/* Step Indicator */}
-        {renderStepIndicator()}
+        <StepIndicator currentStep={currentStep} />
 
         {/* Back to Login */}
         <div className="mb-6">
@@ -127,98 +186,7 @@ export default function RecoveryPage() {
         </div>
 
         {/* Step Content */}
-        {currentStep === "upload" && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="w-5 h-5" />
-                Step 1: Verify PEM Key
-              </CardTitle>
-              <CardDescription>
-                Upload or paste your private PEM key to verify your identity as
-                the root user
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PemUploadContainer onValidPEM={handleValidPEM} />
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === "reset" && (
-          <div className="space-y-6">
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                PEM key verified successfully! You can now reset your password.
-              </AlertDescription>
-            </Alert>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Step 2: Reset Password
-                </CardTitle>
-                <CardDescription>
-                  Create a new secure password for your root account
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PasswordReset
-                  userId={validatedUserId}
-                  onSuccess={handlePasswordResetSuccess}
-                  onCancel={() => setCurrentStep("upload")}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {currentStep === "success" && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-600">
-                <CheckCircle className="w-5 h-5" />
-                Recovery Complete!
-              </CardTitle>
-              <CardDescription>
-                Your root account password has been successfully reset
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert>
-                <CheckCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Success!</strong> Your password has been reset. You
-                  can now log in with your new credentials.
-                </AlertDescription>
-              </Alert>
-
-              <div className="space-y-3">
-                <h4 className="font-medium text-gray-900">Next Steps:</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Log in with your new password
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Consider updating your PEM keys
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Review security settings
-                  </li>
-                </ul>
-              </div>
-
-              <Button onClick={handleBackToLogin} className="w-full" size="lg">
-                Continue to Login
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {renderStepContent()}
 
         {/* Security Notice */}
         <Alert className="mt-6">
