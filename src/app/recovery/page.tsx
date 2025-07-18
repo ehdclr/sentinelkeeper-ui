@@ -15,7 +15,6 @@ import { ArrowLeft, Shield, CheckCircle, Key } from "lucide-react";
 import { PemUploadContainer } from "@/features/recovery/ui/PemUploadContainer";
 import { PasswordResetContainer } from "@/features/recovery/ui/PasswordResetContainer";
 import { StepIndicator } from "@/features/recovery/ui/StepIndicator";
-import { useRecovery } from "@/features/recovery/hooks/useRecovery";
 
 type RecoveryStep = "upload" | "reset" | "success";
 
