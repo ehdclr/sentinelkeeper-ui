@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "../types";
+import { logoutApi } from "../api/logout";
+import { errorHandler } from "../lib/errorHandler";
 
 interface AuthState {
   user: User | null;
@@ -16,7 +18,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       login: (user) => set({ user, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false}),
+      logout: async () => {
+        try {
+          await logoutApi();
+          set({ user: null, isAuthenticated: false });
+        } catch (error) {
+          errorHandler.general(error, "Logout");
+        }
+      },
       updateUser: (userData) => {
         const currentUser = get().user;
         if (currentUser) {
@@ -26,6 +35,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "sentinel-auth",
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );
