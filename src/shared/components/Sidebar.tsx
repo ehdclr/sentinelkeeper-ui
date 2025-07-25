@@ -147,10 +147,10 @@ const Sidebar = () => {
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
                     <Badge
-                      variant={user.role === "root" ? "default" : "secondary"}
+                      variant={user.isSystemRoot ? "default" : "secondary"}
                       className="text-xs px-2 py-0"
                     >
-                      {user.role === "root" ? "Admin" : "User"}
+                      {user.isSystemRoot ? "Admin" : "User"}
                     </Badge>
                     <div className="h-1 w-1 bg-green-500 rounded-full"></div>
                     <span className="text-xs text-green-600">Online</span>
@@ -223,7 +223,7 @@ const Sidebar = () => {
               )}
               <div className={cn("space-y-1", !collapsed && "mt-2")}>
                 {settingsNavigation.map((item) => {
-                  if (item.rootOnly && user?.role !== "root") {
+                  if (item.rootOnly && !user?.isSystemRoot) {
                     return null;
                   }
 

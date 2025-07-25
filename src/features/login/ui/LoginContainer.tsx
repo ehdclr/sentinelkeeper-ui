@@ -35,6 +35,7 @@ export function LoginContainer() {
           id: response.data.user.id,
           username: response.data.user.username,
           email: response.data.user.email,
+          isSystemRoot: response.data.user.isSystemRoot,
           expiresAt: response.data.expiresAt,
         });
 

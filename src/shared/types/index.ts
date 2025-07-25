@@ -28,7 +28,7 @@ export interface User {
   id: string
   username: string
   email: string
-  role: "root" | "user"
+  isSystemRoot: boolean
   createdAt: string
   lastLogin?: string
   isActive: boolean
