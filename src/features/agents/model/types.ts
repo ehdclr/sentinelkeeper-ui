@@ -9,7 +9,7 @@ const agentSchema = z.object({
   os: z.string().optional(),
   arch: z.string().optional(),
   ownerId: z.string().optional(),
-  pemKeyId: z.string().optional(),
+  protocols: z.array(z.enum(["http", "grpc", "websocket"])),
   tags: z.array(z.string()).optional(),
   metrics: z
     .object({
@@ -20,6 +20,22 @@ const agentSchema = z.object({
       processes: z.number(),
       uptime: z.number(),
       timestamp: z.string(),
+      kubernetes: z.object({
+        pods: z.number(),
+        services: z.number(),
+        deployments: z.number(),
+        nodes: z.number(),
+        events: z.array(z.object({
+          id: z.string(),
+          type: z.string(),
+          reason: z.string(),
+          message: z.string(),
+          namespace: z.string(),
+          object: z.string(),
+          timestamp: z.string(),
+          severity: z.enum(["normal", "warning", "error"]),
+        })),
+      }).optional(),
     })
     .optional(),
   status: z.enum(["online", "offline", "error"]),
@@ -35,8 +51,9 @@ export const createAgentSchema = agentSchema.pick({
 });
 
 export const createAgentResponseSchema = agentSchema.extend({
+  agent: agentSchema,
   token: z.string(),
-  install_script: z.string(),
+  installScript: z.string(),
 });
 
 export const agentsResponseSchema = z.object({

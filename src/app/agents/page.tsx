@@ -25,11 +25,10 @@ import { Search, Server, Eye, Trash2, RefreshCw } from "lucide-react";
 import type { Agent } from "@/features/agents/model/types";
 import { useAuthStore } from "@/shared/store/authStore";
 import Link from "next/link";
-// import { useAgents, useCreateAgent } from "@/features/agents/model/queries"
-// import { AgentsPageHeader } from "@/components/AgentsPageHeader";
-// import { AgentsList } from "@/components/AgentsList";
-// import { AgentRegistrationForm } from "@/components/AgentRegistrationForm";
-// import type {CreateAgentResponse} from "@/features/agents/model/types"
+import { AgentsPageHeader } from "@/features/agents/ui/agentsPageHeader";
+import { AgentRegistrationForm } from "@/features/agents/ui/agentRegistrationForm";
+import { AgentsList } from "@/features/agents/ui/agentList";
+import type { CreateAgentResponse } from "@/features/agents/model/types";
 
 const generateAgents = (): Agent[] => [
   {
@@ -173,17 +172,44 @@ const AgentsPage = () => {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
+      <AgentsPageHeader totalAgents={totalAgents} onlineAgents={onlineAgents} />
 
       {/* 에이전트 등록 폼 */}
+      <AgentRegistrationForm
+        onSubmit={handleCreateAgent}
+        isLoading={false}
+        error={null}
+        registrationResult={null}
+        onReset={handleResetRegistration}
+      />
 
       {/* 에이전트 목록 */}
+      <AgentsList
+        agents={filteredAgents}
+        isLoading={false}
+        onRefresh={handleRefresh}
+        onViewAgent={handleViewAgent}
+      />
 
       {/* Search */}
       <Card>
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search agents by name, hostname, or IP address..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Agents Table */}
+      <Card>
         <CardHeader>
-          <CardTitle>
-            Agents (TOTAL AGENTS : {totalAgents})
-          </CardTitle>
+          <CardTitle>Agents (TOTAL AGENTS : {totalAgents})</CardTitle>
           <CardDescription>
             {user?.isSystemRoot
               ? "All system agents are visible"
@@ -235,12 +261,16 @@ const AgentsPage = () => {
                           <div>Memory: {agent.metrics.memory.toFixed(1)}%</div>
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500">No metrics available</div>
+                        <div className="text-sm text-gray-500">
+                          No metrics available
+                        </div>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        {agent.lastSeen ? new Date(agent.lastSeen).toLocaleString() : "N/A"}
+                        {agent.lastSeen
+                          ? new Date(agent.lastSeen).toLocaleString()
+                          : "N/A"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -263,8 +293,7 @@ const AgentsPage = () => {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        {(user?.isSystemRoot ||
-                          agent.ownerId === user?.id) && (
+                        {(user?.isSystemRoot || agent.ownerId === user?.id) && (
                           <Button
                             variant="ghost"
                             size="sm"

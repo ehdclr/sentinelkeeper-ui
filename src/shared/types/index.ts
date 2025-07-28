@@ -52,18 +52,19 @@ export interface PEMKey {
 export interface Agent {
   id: string
   name: string
-  hostname: string
   ipAddress: string
-  status: "online" | "offline" | "error"
-  lastSeen: string
-  version: string
-  os: string
-  arch: string
-  ownerId: string
-  pemKeyId: string
-  tags: string[]
+  isPublic: boolean
+  hostname?: string
+  os?: string
+  arch?: string
+  ownerId?: string
   protocols: ("http" | "grpc" | "websocket")[]
-  config: AgentConfig
+  tags: string[]
+  status: "online" | "offline" | "error"
+  createdAt?: string
+  lastSeen?: string
+  token?: string
+  config?: AgentConfig
   metrics?: AgentMetrics
 }
 
@@ -73,7 +74,7 @@ export interface AgentConfig {
   bufferSize: number // MB
   retryAttempts: number
   enableKubernetes: boolean
-  customFields: Record<string, any>
+  customFields?: Record<string, any>
 }
 
 export interface AgentMetrics {
