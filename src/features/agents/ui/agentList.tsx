@@ -1,44 +1,46 @@
-"use client";
+"use client"
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Server, Eye, Trash2, RefreshCw } from "lucide-react";
-import type { Agent } from "../model/types";
-import { getStatusColor, getStatusText, formatLastSeen } from "../lib/utils";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { StatusBadge } from "@/shared/ui/StatusBadge"
+import { Server, Eye, Trash2, RefreshCw, Globe, Lock } from "lucide-react"
+import type { Agent } from "../model/types"
+import { getEnvironmentColor, formatUptime } from "../lib/utils"
 
 interface AgentsListProps {
-  agents: Agent[];
-  isLoading: boolean;
-  onRefresh: () => void;
-  onViewAgent: (agentId: string) => void;
+  agents: Agent[]
+  isLoading: boolean
+  onRefresh: () => void
+  onViewAgent: (agentId: string) => void
 }
 
-export const AgentsList = ({
-  agents,
-  isLoading,
-  onRefresh,
-  onViewAgent,
-}: AgentsListProps) => {
+export function AgentsList({ agents, isLoading, onRefresh, onViewAgent }: AgentsListProps) {
+  const getStatusVariant = (status: Agent["status"]) => {
+    switch (status) {
+      case "online":
+        return "healthy"
+      case "offline":
+        return "warning"
+      case "error":
+        return "error"
+      default:
+        return "warning"
+    }
+  }
+
   if (isLoading) {
     return (
       <Card>
         <CardContent className="p-8">
-          <div className="flex items-center justify-center">
-            <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">Loading agents...</span>
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-600">Loading agents...</p>
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -46,9 +48,7 @@ export const AgentsList = ({
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Registered Agents ({agents.length})</CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            Monitor and manage your system agents
-          </p>
+          <CardDescription>Monitor and manage your infrastructure agents</CardDescription>
         </div>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -58,23 +58,20 @@ export const AgentsList = ({
       <CardContent>
         {agents.length === 0 ? (
           <div className="text-center py-8">
-            <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No agents registered
-            </h3>
-            <p className="text-gray-600">
-              Register your first agent to start monitoring.
-            </p>
+            <Server className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-gray-600 mb-2">No agents registered yet</p>
+            <p className="text-sm text-gray-500">Register your first agent to start monitoring</p>
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>IP Address</TableHead>
+                <TableHead>Agent</TableHead>
+                <TableHead>Environment</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Visibility</TableHead>
+                <TableHead>Metrics</TableHead>
                 <TableHead>Last Seen</TableHead>
+                <TableHead>Tags</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -82,37 +79,66 @@ export const AgentsList = ({
               {agents.map((agent) => (
                 <TableRow key={agent.id}>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Server className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium">{agent.name}</span>
+                    <div className="flex items-center space-x-3">
+                      <Server className="h-5 w-5 text-gray-400" />
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{agent.name}</span>
+                          {agent.isPublic ? (
+                            <Globe className="h-4 w-4 text-blue-600"/>
+                          ) : (
+                            <Lock className="h-4 w-4 text-gray-600"/>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {agent.hostname} • {agent.ipAddress}
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                      {agent.ipAddress}
-                    </code>
+                    <Badge className={getEnvironmentColor(agent?.environment || "production")}>{agent?.environment || "production"}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(agent.status)}>
-                      {getStatusText(agent.status)}
-                    </Badge>
+                    <StatusBadge status={getStatusVariant(agent.status)} />
                   </TableCell>
                   <TableCell>
-                    <Badge variant={agent.isPublic ? "default" : "secondary"}>
-                      {agent.isPublic ? "Public" : "Private"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm text-gray-600">
-                    {formatLastSeen(agent.lastSeen)}
+                    {agent.metrics ? (
+                      <div className="text-sm space-y-1">
+                        <div>CPU: {agent.metrics.cpu.toFixed(1)}%</div>
+                        <div>Memory: {agent.metrics.memory.toFixed(1)}%</div>
+                        <div className="text-xs text-gray-500">Uptime: {formatUptime(agent.metrics.uptime)}</div>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">No data</span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewAgent(agent.id)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    <div className="text-sm">{new Date(agent.lastSeen || "").toLocaleString()}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {agent.tags?.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {agent.tags?.length && agent.tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{agent.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => onViewAgent(agent.id.toString())}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -121,5 +147,5 @@ export const AgentsList = ({
         )}
       </CardContent>
     </Card>
-  );
-};
+  )
+}

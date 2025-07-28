@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const agentSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   name: z.string(),
   ipAddress: z.string(),
   isPublic: z.boolean(),
@@ -9,7 +9,7 @@ const agentSchema = z.object({
   os: z.string().optional(),
   arch: z.string().optional(),
   ownerId: z.string().optional(),
-  protocols: z.array(z.enum(["http", "grpc", "websocket"])),
+  protocols: z.enum(["http", "grpc", "websocket"]),
   tags: z.array(z.string()).optional(),
   metrics: z
     .object({
@@ -48,15 +48,20 @@ export type Agent = z.infer<typeof agentSchema>;
 
 export const createAgentSchema = agentSchema.pick({
   name: true,
+  ipAddress: true,
+  isPublic: true,
+  tags: true,
 });
 
-export const createAgentResponseSchema = agentSchema.extend({
+export const createAgentResponseSchema = z.object({
+  success: z.boolean(),
   agent: agentSchema,
   token: z.string(),
   installScript: z.string(),
 });
 
 export const agentsResponseSchema = z.object({
+  success: z.boolean(),
   agents: z.array(agentSchema),
   total: z.number(),
 });

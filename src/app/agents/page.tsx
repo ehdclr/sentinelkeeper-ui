@@ -1,203 +1,92 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { StatusBadge } from "@/shared/ui/StatusBadge";
-import { Search, Server, Eye, Trash2, RefreshCw } from "lucide-react";
-import type { Agent } from "@/features/agents/model/types";
-import { useAuthStore } from "@/shared/store/authStore";
-import Link from "next/link";
-import { AgentsPageHeader } from "@/features/agents/ui/agentsPageHeader";
-import { AgentRegistrationForm } from "@/features/agents/ui/agentRegistrationForm";
-import { AgentsList } from "@/features/agents/ui/agentList";
-import type { CreateAgentResponse } from "@/features/agents/model/types";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Search } from "lucide-react"
+import { useAuthStore } from "@/shared/store/authStore"
+import { useAgents, useCreateAgent } from "@/features/agents/model/queries"
+import { AgentsPageHeader } from "@/features/agents/ui/agentsPageHeader"
+import { AgentsList } from "@/features/agents/ui/agentList"
+import { AgentRegistrationForm } from "@/features/agents/ui/agentRegistrationForm"
+import type { CreateAgentResponse, CreateAgentRequest } from "@/features/agents/model/types"
 
-const generateAgents = (): Agent[] => [
-  {
-    id: "1",
-    name: "Web Server 01",
-    hostname: "web-01.example.com",
-    ipAddress: "192.168.1.10",
-    status: "online",
-    lastSeen: new Date().toISOString(),
-    os: "Ubuntu 22.04",
-    arch: "x86_64",
-    ownerId: "root",
-    pemKeyId: "key-1",
-    tags: ["production", "web"],
-    metrics: {
-      cpu: 45.2,
-      memory: 67.8,
-      disk: 23.1,
-      network: 12.5,
-      processes: 156,
-      uptime: 86400,
-      timestamp: new Date().toISOString(),
-    },
-    isPublic: true,
-  },
-  {
-    id: "2",
-    name: "Database Server",
-    hostname: "db-01.example.com",
-    ipAddress: "192.168.1.20",
-    status: "online",
-    lastSeen: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-    os: "CentOS 8",
-    arch: "x86_64",
-    ownerId: "root",
-    pemKeyId: "key-1",
-    tags: ["production", "database"],
-    metrics: {
-      cpu: 78.9,
-      memory: 89.2,
-      disk: 45.6,
-      network: 34.7,
-      processes: 89,
-      uptime: 172800,
-      timestamp: new Date().toISOString(),
-    },
-    isPublic: true,
-  },
-  {
-    id: "3",
-    name: "API Gateway",
-    hostname: "api-01.example.com",
-    ipAddress: "192.168.1.30",
-    status: "error",
-    lastSeen: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-    os: "CentOS 8",
-    arch: "x86_64",
-    ownerId: "root",
-    pemKeyId: "key-1",
-    tags: ["production", "api"],
-    metrics: {
-      cpu: 95.1,
-      memory: 92.3,
-      disk: 78.9,
-      network: 67.4,
-      processes: 234,
-      uptime: 43200,
-      timestamp: new Date().toISOString(),
-    },
-    isPublic: false,
-  },
-];
+export default function AgentsPage() {
+  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [registrationResult, setRegistrationResult] = useState<CreateAgentResponse | null>(null)
+  const { user } = useAuthStore()
 
-const AgentsPage = () => {
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [registrationResult, setRegistrationResult] = useState<string | null>(
-    null
-  );
-  const { user } = useAuthStore();
+  // React Query 훅들
+  const { data: agentsData, isLoading, refetch } = useAgents()
+  const createAgentMutation = useCreateAgent()
 
-  //TODO react Query 훅
+  // 계산된 값들
+  const agents = agentsData?.agents || []
+  const totalAgents = agents.length
+  const onlineAgents = agents.filter((agent) => agent.status === "online").length
 
-  //TODO 계산된 값들
-  const agents = generateAgents() || []; //TODO 데이터 fetch 후 변경
-  const totalAgents = agents.length || 0;
-  const onlineAgents =
-    agents.filter((agent) => agent.status === "online").length || 0;
-
-  //TODO 이벤트 핸들러
-  const handleCreateAgent = async (name: string) => {
+  // 이벤트 핸들러들
+  const handleCreateAgent = async (data: CreateAgentRequest) => {
     try {
-      const result = await createAgentMutation.mutateAsync({ name });
-      setRegistrationResult(result);
-    } catch (err) {
-      console.error("Failed to create agent:", err);
+      const result = await createAgentMutation.mutateAsync(data)
+      setRegistrationResult(result)
+    } catch (error) {
+      console.error("Failed to create agent:", error)
+      throw error
     }
-  };
+  }
 
   const handleViewAgent = (agentId: string) => {
-    router.push(`/agents/${agentId}`);
-  };
+    router.push(`/agents/${agentId}`)
+  }
 
   const handleResetRegistration = () => {
-    setRegistrationResult(null);
-  };
+    setRegistrationResult(null)
+  }
 
   const handleRefresh = () => {
-    refetch();
-  };
+    refetch()
+  }
 
-  const filteredAgents =
-    agents?.filter((agent) => {
-      const matchesSearch =
-        agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        agent.hostname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        agent.ipAddress.includes(searchTerm);
+  const filteredAgents = agents.filter((agent) => {
+    const matchesSearch =
+      agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.hostname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.ipAddress.includes(searchTerm) ||
+      agent.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agent.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
 
-      // Filter by ownership for non-root users
-      if (!user?.isSystemRoot) {
-        return matchesSearch && agent.ownerId === user?.id;
-      }
-
-      return matchesSearch;
-    }) || [];
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "online":
-        return "healthy";
-      case "offline":
-        return "warning";
-      case "error":
-        return "error";
-      default:
-        return "warning";
+    // Filter by ownership for non-root users
+    if (user?.role !== "root") {
+      return matchesSearch && agent.ownerId === user?.id
     }
-  };
+
+    return matchesSearch
+  })
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
+      {/* 페이지 헤더 */}
       <AgentsPageHeader totalAgents={totalAgents} onlineAgents={onlineAgents} />
 
       {/* 에이전트 등록 폼 */}
       <AgentRegistrationForm
         onSubmit={handleCreateAgent}
-        isLoading={false}
-        error={null}
-        registrationResult={null}
+        isLoading={createAgentMutation.isPending}
+        error={createAgentMutation.error?.message || null}
+        registrationResult={registrationResult}
         onReset={handleResetRegistration}
       />
 
-      {/* 에이전트 목록 */}
-      <AgentsList
-        agents={filteredAgents}
-        isLoading={false}
-        onRefresh={handleRefresh}
-        onViewAgent={handleViewAgent}
-      />
-
-      {/* Search */}
+      {/* 검색 */}
       <Card>
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search agents by name, hostname, or IP address..."
+              placeholder="Search agents by name, hostname, IP, description, or tags..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -206,113 +95,13 @@ const AgentsPage = () => {
         </CardContent>
       </Card>
 
-      {/* Agents Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Agents (TOTAL AGENTS : {totalAgents})</CardTitle>
-          <CardDescription>
-            {user?.isSystemRoot
-              ? "All system agents are visible"
-              : "Only your agents are visible"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {false ? (
-            <div className="text-center py-6">
-              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-600">Refreshing agents...</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Metrics</TableHead>
-                  <TableHead>Last Seen</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAgents.map((agent) => (
-                  <TableRow key={agent.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <Server className="h-5 w-5 text-gray-400" />
-                        <div>
-                          <div className="font-medium">{agent.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {agent.hostname} • {agent.ipAddress}
-                          </div>
-                          <div className="text-xs text-gray-400">
-                            {agent.os} • {agent.arch}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={getStatusVariant(agent.status)} />
-                    </TableCell>
-                    <TableCell>
-                      {agent.metrics ? (
-                        <div className="text-sm">
-                          <div>CPU: {agent.metrics.cpu.toFixed(1)}%</div>
-                          <div>Memory: {agent.metrics.memory.toFixed(1)}%</div>
-                        </div>
-                      ) : (
-                        <div className="text-sm text-gray-500">
-                          No metrics available
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {agent.lastSeen
-                          ? new Date(agent.lastSeen).toLocaleString()
-                          : "N/A"}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {agent.tags?.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Link href={`/agents/${agent.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        {(user?.isSystemRoot || agent.ownerId === user?.id) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      {/* 에이전트 목록 */}
+      <AgentsList
+        agents={filteredAgents}
+        isLoading={isLoading}
+        onRefresh={handleRefresh}
+        onViewAgent={handleViewAgent}
+      />
     </div>
-  );
-};
-
-export default AgentsPage;
+  )
+}
